@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+	
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+		<script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular.js"></script>
+		<script src="js/onlinegame.js"></script>
+	     
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	
+	    <title>Jason's Game</title>
+	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	</head>
+	
+	<body onLoad="initialLoadBoard();">
+	   <div id="data"></div>
+	   <button onClick="renderBoard();" type="button" class="btn">Refresh</button>
+	   <button id="gridBtn" onClick="toggleGrid();" type="button" class="btn">Show Grid</button>
+	   <canvas id="gameBoard" width="800" height="800" style="border:1px solid #000000;"></canvas>
+	
+	</body>
+</html>
