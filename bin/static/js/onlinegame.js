@@ -119,6 +119,11 @@ function drawGrid() {
 
 function toggleGrid() {
 	grid = !grid;
-	$("gridBtn").val("Hide Grid");
+	
+	if (grid == true) {
+		$("#gridBtn").text("Hide Grid");
+	} else {
+		$("#gridBtn").text("Show Grid");
+	}
 }
 
