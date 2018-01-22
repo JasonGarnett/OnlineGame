@@ -5,6 +5,7 @@ import java.util.List;
 public class GameBoard {
 
 	public String name;
+	public String wsLocation;
 	public int height;
 	public int width;
 	public List<Piece> pieces;

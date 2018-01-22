@@ -23,6 +23,7 @@ public class GameBoardManager {
 		
 		gameBoards = new HashMap<>();
 		gameBoards.put("whatever", randStartingPieces("whatever", Integer.parseInt(props.getProperty("boardSize.height")), Integer.parseInt(props.getProperty("boardSize.width"))));
+		gameBoards.get("whatever").wsLocation = props.getProperty("ws");
 		
 	}
 	
@@ -40,6 +41,7 @@ public class GameBoardManager {
 				gb.pieces.add(gameBoards.get(boardName).getPiece(x, y));
 			}
 		}
+		gb.wsLocation = gameBoards.get(boardName).wsLocation;
 		
 		return gb;
 	}

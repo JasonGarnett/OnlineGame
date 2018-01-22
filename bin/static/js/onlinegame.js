@@ -18,6 +18,8 @@ imageObj.src = 'https://www.html5canvastutorials.com/demos/assets/darth-vader.jp
 var gameModel;
 var grid = false;
 
+var ws;
+
 function initialLoadBoard() {
 	
 	canvas = document.getElementById("gameBoard");
@@ -34,6 +36,7 @@ function initialLoadBoard() {
 		}, function(data, status) {
 			gameModel = data;
 			//console.log("Got stuff");
+			connect(data.wsLocation);
 			renderLoop();
 	});
 	
@@ -64,6 +67,28 @@ function loadBoardCharacteristics(canvas, topX, topY) {
 		y: board.topLeft.y + canvas.height
 	}
 	
+}
+
+function connect(wsAddr) {
+	ws = new WebSocket(wsAddr);
+	ws.onmessage = function(data){
+		showGreeting(data.data);
+	}
+}
+
+function disconnect() {
+    if (ws != null) {
+        ws.close();
+    }
+    console.log("Disconnected");
+}
+
+function sendMsg() {
+    ws.send("hello");
+}
+
+function showGreeting(message) {
+    $("#greetings").append(" " + message + "");
 }
 
 function renderBoard() {
