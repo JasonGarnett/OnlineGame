@@ -8,6 +8,7 @@ import java.util.Random;
 import org.apache.log4j.Logger;
 
 import com.garnett.main.Controller;
+import com.garnett.main.SocketHandler;
 import com.garnett.model.GameBoard;
 import com.garnett.model.Piece;
 import com.garnett.utilities.GameProperties;
@@ -18,6 +19,7 @@ public class GameBoardManager {
 	private Map<String,GameBoard> gameBoards;
 	final static Logger LOG = Logger.getLogger(Controller.class);
 	private GameProperties props = GameProperties.getInstance();
+	private SocketHandler socketHandler;
 	
 	private GameBoardManager() {
 		
@@ -25,6 +27,28 @@ public class GameBoardManager {
 		gameBoards.put("whatever", randStartingPieces("whatever", Integer.parseInt(props.getProperty("boardSize.height")), Integer.parseInt(props.getProperty("boardSize.width"))));
 		gameBoards.get("whatever").wsLocation = props.getProperty("ws");
 		
+		int tickRate = Integer.parseInt(props.getProperty("tickRate"));
+		
+		Thread gameLoop = new Thread(() -> {
+			while (true) {
+				if (socketHandler != null) {
+					socketHandler.sendToAllSession("yo");
+				}
+				
+				try {
+					Thread.sleep(1000/tickRate);
+				} catch (InterruptedException e) {
+					LOG.error("Error Sleeping", e);
+				}
+			}
+		});
+		
+		gameLoop.start();
+		
+	}
+	
+	public void setSocketHandler(SocketHandler h) {
+		this.socketHandler = h;
 	}
 	
 	public static GameBoardManager getInstance() { return instance; }
