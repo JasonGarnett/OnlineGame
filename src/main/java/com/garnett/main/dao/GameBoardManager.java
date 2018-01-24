@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -23,11 +24,11 @@ public class GameBoardManager {
 	
 	private GameBoardManager() {
 		
-		gameBoards = new HashMap<>();
+		gameBoards = new ConcurrentHashMap<>();
 		gameBoards.put("whatever", randStartingPieces("whatever", Integer.parseInt(props.getProperty("boardSize.height")), Integer.parseInt(props.getProperty("boardSize.width"))));
 		gameBoards.get("whatever").wsLocation = props.getProperty("ws");
 		
-		int tickRate = Integer.parseInt(props.getProperty("tickRate"));
+		int tickRate = Integer.parseInt(props.getProperty("tickrate"));
 		
 		Thread gameLoop = new Thread(() -> {
 			while (true) {

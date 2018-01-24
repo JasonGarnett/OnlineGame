@@ -13,16 +13,18 @@ var board = {
 
 
 var imageObj = new Image();   
-imageObj.src = 'https://www.html5canvastutorials.com/demos/assets/darth-vader.jpg';
+imageObj.src = 'images/images-castle-clipart-830x717.png';
 
 var gameModel;
 var grid = false;
-
+var selected;
 var ws;
 
 function initialLoadBoard() {
 	
 	canvas = document.getElementById("gameBoard");
+	canvas.addEventListener("click", onClick, false);
+	
 	ctx = canvas.getContext("2d");
 	loadBoardCharacteristics(canvas, 33, 45);
 		
@@ -35,12 +37,45 @@ function initialLoadBoard() {
 		width: board.widthInPieces
 		}, function(data, status) {
 			gameModel = data;
-			//console.log("Got stuff");
 			connect(data.wsLocation);
 			renderLoop();
 	});
 	
 	
+}
+
+function onClick(e) {
+	var pos = getMousePos(e);
+	console.log("click on " + pos.x + "," + pos.y);
+	
+	var rel = whichRelativeTile(pos);
+	console.log("Relative " + rel.x + "," + rel.y);
+	selected = rel;
+	
+	var act = whichActualTile(pos);
+	console.log("Actual " + act.x + "," + act.y);
+}
+
+function whichRelativeTile(pos) {
+	return {
+		x: Math.floor(pos.x/board.heightPerPiece),
+		y: Math.floor(pos.y/board.heightPerPiece)
+	};
+}
+
+function whichActualTile(pos) {
+	var rel = whichRelativeTile(pos);
+	return {
+		x: board.topLeft.x + rel.x,
+		y: board.topLeft.y + rel.y
+	};
+}
+
+function getMousePos(e) {
+	return {
+		x: e.clientX - canvas.getBoundingClientRect().left,
+		y: e.clientY - canvas.getBoundingClientRect().top
+	};
 }
 
 function renderLoop() {
@@ -88,12 +123,13 @@ function sendMsg() {
 }
 
 function showGreeting(message) {
-    $("#greetings").append(" " + message + "");
+    $("#greetings").html("Last Updated: " + (Date.now()));
 }
 
 function renderBoard() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	
+	ctx.fillStyle = "green";
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	gameModel.pieces.forEach(function(piece) {
 		if (piece.item == 1) {
 			drawPiece(imageObj, piece.x, piece.y);
@@ -102,6 +138,9 @@ function renderBoard() {
 	
 	if (grid == true)
 		drawGrid();
+	
+	if (selected)
+		drawSelected();
 }
 
 function drawPiece(item, x, y) {
@@ -110,13 +149,11 @@ function drawPiece(item, x, y) {
 
 function xToPixel(pieceX) {
 	var relativeX = pieceX - board.topLeft.x;
-	//console.log("Piece X = " + pieceX + " relative X = " + relativeX);
 	return relativeX * board.widthPerPiece;
 }
 
 function yToPixel(pieceY) {
 	var relativeY = pieceY - board.topLeft.y;
-	//console.log("Piece Y = " + pieceY + " relative Y = " + relativeY);
 	return relativeY * board.heightPerPiece;
 }
 
@@ -129,17 +166,32 @@ function drawLine() {
 
 function drawGrid() {
 
+	ctx.lineWidth = "1";
+	ctx.strokeStyle = "black";
 	for (var x = 0; x <= canvas.width-1; x = x + board.widthPerPiece) {
+		ctx.beginPath();
 		ctx.moveTo(x, 0);
 		ctx.lineTo(x, canvas.width);
 		ctx.stroke();
 	}
 	
 	for (var y=0; y<=canvas.height-1; y+=board.heightPerPiece) {
+		ctx.beginPath();
 		ctx.moveTo(0 , y);
 		ctx.lineTo(canvas.height, y);
 		ctx.stroke();
 	}
+}
+
+function drawSelected() {
+	ctx.beginPath();
+	ctx.lineWidth = "4";
+	ctx.strokeStyle = "blue"
+	ctx.rect(selected.x*board.widthPerPiece,
+			 selected.y*board.heightPerPiece,
+			 board.widthPerPiece,
+			 board.heightPerPiece);
+	ctx.stroke();
 }
 
 function toggleGrid() {

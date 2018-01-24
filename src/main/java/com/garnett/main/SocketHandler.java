@@ -2,8 +2,8 @@ package com.garnett.main;
 
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
@@ -19,12 +19,12 @@ import com.garnett.utilities.GameProperties;
 @Component
 public class SocketHandler extends TextWebSocketHandler {
 
-	final static Logger LOG = Logger.getLogger(TextWebSocketHandler.class);
+	final static Logger LOG = Logger.getLogger(SocketHandler.class);
 	private GameProperties props = GameProperties.getInstance();
     private Map<String,WebSocketSession> sessions;
     
     public SocketHandler() {
-    	sessions = new HashMap<>();
+    	sessions = new ConcurrentHashMap<>();
     	GameBoardManager.getInstance().setSocketHandler(this);
     }
     
@@ -46,7 +46,12 @@ public class SocketHandler extends TextWebSocketHandler {
 				LOG.error("Error sending message to " + sessionId, e);
 			}
     	} else {
-    		LOG.warn("No session to send to");
+    		try {
+    			LOG.warn("No session to send to");
+				timeoutSession(sessionId);
+			} catch (IOException e) {
+				LOG.error("Error closing session", e); 
+			}
     	}
     }
     
@@ -58,12 +63,20 @@ public class SocketHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message)
             throws Exception {
         if ("CLOSE".equalsIgnoreCase(message.getPayload())) {
-        	LOG.info("Session " + session.getId() + " is closed, removing from sessions list.");
-            session.close();
-            sessions.remove(session.getId());
+        	timeoutSession(session.getId());
         } else {
             LOG.info(session.getId() + " sent :" + message.getPayload());
             session.sendMessage(new TextMessage("hello to you too"));
         }
+    }
+    
+    private void timeoutSession(String sessionId) throws IOException {
+    	LOG.info("Session " + sessionId + " is closed, removing from sessions list.");
+    	if (sessions.get(sessionId) != null) {
+    		WebSocketSession session = sessions.get(sessionId);
+    		if (session.isOpen())
+        		session.close();
+    		 sessions.remove(session.getId());
+    	}
     }
 }
