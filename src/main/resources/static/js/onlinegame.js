@@ -12,8 +12,11 @@ var board = {
 }
 
 
-var imageObj = new Image();   
-imageObj.src = 'images/images-castle-clipart-830x717.png';
+var castle1 = new Image();   
+castle1.src = 'images/images-castle-clipart-830x717.png';
+
+var castle2 = new Image();   
+castle2.src = 'images/castle-clip-art-2.png';
 
 var gameModel;
 var grid = false;
@@ -136,7 +139,10 @@ function renderBoard() {
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	gameModel.pieces.forEach(function(piece) {
 		if (piece.item == 1) {
-			drawPiece(imageObj, piece.x, piece.y);
+			drawPiece(castle1, piece.x, piece.y);
+		}
+		if (piece.item == 2) {
+			drawPiece(castle2, piece.x, piece.y);
 		}
 	});
 	
