@@ -20,16 +20,14 @@ var grid = false;
 var selected;
 var ws;
 
-function initialLoadBoard() {
+function initialLoadBoard(topLeftX, topLeftY, whichBoard, wsLocation) {
 	
 	canvas = document.getElementById("gameBoard");
 	canvas.addEventListener("click", onClick, false);
 	
 	ctx = canvas.getContext("2d");
-	loadBoardCharacteristics(canvas, 33, 45);
-		
-    var whichBoard = "whatever";    
-    
+	loadBoardCharacteristics(canvas, topLeftX, topLeftY);
+		    
 	$.get("/gameboard/" + whichBoard, {
 		topLeftX:board.topLeft.x,
 		topLeftY:board.topLeft.y,
@@ -37,11 +35,17 @@ function initialLoadBoard() {
 		width: board.widthInPieces
 		}, function(data, status) {
 			gameModel = data;
-			connect(data.wsLocation);
+			connect(wsLocation);
 			renderLoop();
 	});
 	
 	
+}
+
+function register() {
+	$.get("/register", function(data, status) {
+		initialLoadBoard(data.topLeftX, data.topLeftY, data.whichBoard, data.wsLocation);
+	});
 }
 
 function onClick(e) {

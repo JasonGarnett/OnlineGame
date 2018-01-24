@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.garnett.main.dao.GameBoardManager;
+import com.garnett.main.dao.UserManager;
 import com.garnett.model.GameBoard;
+import com.garnett.model.GameUser;
 import com.garnett.utilities.GameProperties;
 
 @RestController
@@ -20,6 +22,7 @@ public class Controller {
 	final static Logger LOG = Logger.getLogger(Controller.class);
 	private GameProperties props = GameProperties.getInstance();
 	private static GameBoardManager mgr = GameBoardManager.getInstance();
+	private static UserManager userMgr = UserManager.getInstance();
 	
 	@RequestMapping(value="/gameboard/{whichBoard}", method=RequestMethod.GET)
 	public GameBoard gameboard(@PathVariable("whichBoard") String whichBoard, @RequestParam int topLeftX, @RequestParam int topLeftY, @RequestParam int height, @RequestParam int width, @AuthenticationPrincipal final UserDetails user) {
@@ -32,5 +35,13 @@ public class Controller {
 		else
 			return new GameBoard("ERROR", 0,0);
 		
+	}
+	
+	@RequestMapping(value="/register", method=RequestMethod.GET)
+	public GameUser register(@AuthenticationPrincipal final UserDetails user) {
+		
+		LOG.info("Registering user: " + user.getUsername());
+		
+		return userMgr.getUser(user.getUsername());
 	}
 }

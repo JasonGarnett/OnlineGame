@@ -1,7 +1,6 @@
 package com.garnett.main.dao;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +25,6 @@ public class GameBoardManager {
 		
 		gameBoards = new ConcurrentHashMap<>();
 		gameBoards.put("whatever", randStartingPieces("whatever", Integer.parseInt(props.getProperty("boardSize.height")), Integer.parseInt(props.getProperty("boardSize.width"))));
-		gameBoards.get("whatever").wsLocation = props.getProperty("ws");
 		
 		int tickRate = Integer.parseInt(props.getProperty("tickrate"));
 		
@@ -66,7 +64,6 @@ public class GameBoardManager {
 				gb.pieces.add(gameBoards.get(boardName).getPiece(x, y));
 			}
 		}
-		gb.wsLocation = gameBoards.get(boardName).wsLocation;
 		
 		return gb;
 	}
