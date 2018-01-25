@@ -7,8 +7,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garnett.main.Controller;
 import com.garnett.main.SocketHandler;
+import com.garnett.model.GameAction;
 import com.garnett.model.GameBoard;
 import com.garnett.model.Piece;
 import com.garnett.utilities.GameProperties;
@@ -20,6 +22,8 @@ public class GameBoardManager {
 	final static Logger LOG = Logger.getLogger(Controller.class);
 	private GameProperties props = GameProperties.getInstance();
 	private SocketHandler socketHandler;
+	private UserManager userMgr = UserManager.getInstance();
+	private ObjectMapper mapper = new ObjectMapper();
 	
 	private GameBoardManager() {
 		
@@ -30,11 +34,8 @@ public class GameBoardManager {
 		
 		Thread gameLoop = new Thread(() -> {
 			while (true) {
-				if (socketHandler != null) {
-					socketHandler.sendToAllSession("yo");
-				}
-				
 				try {
+					updateAllUsers();
 					Thread.sleep(1000/tickRate);
 				} catch (InterruptedException e) {
 					LOG.error("Error Sleeping", e);
@@ -51,6 +52,23 @@ public class GameBoardManager {
 	}
 	
 	public static GameBoardManager getInstance() { return instance; }
+	
+	private void updateAllUsers() {
+		// TODO: Kick off threads to update all users at once.
+		userMgr.getUsers().forEach(user -> {
+			try {
+				String msgToSend = mapper.writeValueAsString(getBoard(user.whichBoard, user.topLeftX, user.topLeftY, user.height, user.width));
+				socketHandler.sendToSession(user.wsSession.getId(), msgToSend);
+			} catch (Exception e) {
+				LOG.error("Error sending update to " + user.userName, e);
+			}
+		});
+	}
+	
+	public void handleGameAction(GameAction action) {
+		LOG.info("Handling action " + action.action);
+		gameBoards.get(action.whichBoard).getPiece(action.x, action.y).action = action;
+	}
 	
 	public GameBoard getBoard(String boardName) { return gameBoards.get(boardName); }
 	
@@ -76,7 +94,7 @@ public class GameBoardManager {
 		Random r = new Random();
 		for (int x=0; x<=width-1; x++) {
 			for (int y=0; y<=height-1; y++) {
-				gb.pieces.add(new Piece(r.nextInt(5), x, y));
+				gb.pieces.add(new Piece(r.nextInt(15), x, y));
 			}
 		}
 		

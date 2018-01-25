@@ -21,16 +21,21 @@ castle2.src = 'images/castle-clip-art-2.png';
 var gameModel;
 var grid = false;
 var selected;
+var hover;
 var ws;
+var sessionInfo;
 
 function initialLoadBoard(topLeftX, topLeftY, whichBoard, wsLocation) {
 	
 	canvas = document.getElementById("gameBoard");
 	canvas.addEventListener("click", onClick, false);
+	//canvas.addEventListener("mouseover", onMouseOver, false);
 	
 	ctx = canvas.getContext("2d");
 	loadBoardCharacteristics(canvas, topLeftX, topLeftY);
-		    
+	sessionInfo.height = board.heightInPieces;
+	sessionInfo.width = board.widthInPieces;
+	
 	$.get("/gameboard/" + whichBoard, {
 		topLeftX:board.topLeft.x,
 		topLeftY:board.topLeft.y,
@@ -47,6 +52,7 @@ function initialLoadBoard(topLeftX, topLeftY, whichBoard, wsLocation) {
 
 function register() {
 	$.get("/register", function(data, status) {
+		sessionInfo = data;
 		initialLoadBoard(data.topLeftX, data.topLeftY, data.whichBoard, data.wsLocation);
 	});
 }
@@ -61,6 +67,19 @@ function onClick(e) {
 	
 	var act = whichActualTile(pos);
 	console.log("Actual " + act.x + "," + act.y);
+	
+	act.action = "clicked";
+	act.userName = sessionInfo.userName;
+	act.whichBoard = sessionInfo.whichBoard;
+	
+	sendMsg(act);
+}
+
+function onMouseOver(e) {
+	var pos = getMousePos(e);
+	var rel = whichRelativeTile(pos);
+	
+	hover = rel;
 }
 
 function whichRelativeTile(pos) {
@@ -114,7 +133,11 @@ function loadBoardCharacteristics(canvas, topX, topY) {
 function connect(wsAddr) {
 	ws = new WebSocket(wsAddr);
 	ws.onmessage = function(data){
+		gameBoard = data;
 		showGreeting(data.data);
+	}
+	ws.onopen = function() {
+		sendMsg(sessionInfo);
 	}
 }
 
@@ -125,8 +148,8 @@ function disconnect() {
     console.log("Disconnected");
 }
 
-function sendMsg() {
-    ws.send("hello");
+function sendMsg(msg) {
+    ws.send(JSON.stringify(msg));
 }
 
 function showGreeting(message) {
@@ -144,6 +167,9 @@ function renderBoard() {
 		if (piece.item == 2) {
 			drawPiece(castle2, piece.x, piece.y);
 		}
+		if (piece.action != null && piece.action.action == "clicked") {
+			console.log(piece.x + "," + piece.y + " is clicked.");
+		}
 	});
 	
 	if (grid == true)
@@ -151,6 +177,9 @@ function renderBoard() {
 	
 	if (selected)
 		drawSelected();
+	
+//	if (hover)
+//		drawHover();
 }
 
 function drawPiece(item, x, y) {
@@ -202,7 +231,21 @@ function drawSelected() {
 			 board.widthPerPiece,
 			 board.heightPerPiece);
 	ctx.stroke();
+	
+	ctx.lineWidth = "0.5";
+	ctx.font="10px Georgia";
+	ctx.strokeText((board.topLeft.x+selected.x)+","+(board.topLeft.y+selected.y), (selected.x*board.widthPerPiece)+5,(selected.y*board.heightPerPiece)+15);
+	
 }
+
+//function drawHover() {
+//	ctx.beginPath();
+//	ctx.fillStyle = "#8ED660"
+//	ctx.fillRect(hover.x*board.widthPerPiece,
+//			 hover.y*board.heightPerPiece,
+//			 board.widthPerPiece,
+//			 board.heightPerPiece);
+//}
 
 function toggleGrid() {
 	grid = !grid;

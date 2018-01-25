@@ -3,6 +3,7 @@ package com.garnett.model;
 public class Piece {
 
 	public int item;
+	public GameAction action;
 	public int x;
 	public int y;
 	

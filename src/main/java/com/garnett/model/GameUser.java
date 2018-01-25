@@ -4,8 +4,10 @@ import java.util.Random;
 
 import org.springframework.web.socket.WebSocketSession;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.garnett.utilities.GameProperties;
 
+@JsonIgnoreProperties(value = { "wsSession" })
 public class GameUser {
 
 	public String userName;
@@ -17,6 +19,8 @@ public class GameUser {
 	public int width;
 	public WebSocketSession wsSession;
 	private GameProperties props = GameProperties.getInstance();
+	
+	public GameUser() { }
 	
 	public GameUser(String userName) {
 		this.userName = userName;

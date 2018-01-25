@@ -1,9 +1,11 @@
 package com.garnett.main.dao;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
+import org.springframework.web.socket.WebSocketSession;
 
 import com.garnett.main.Controller;
 import com.garnett.model.GameUser;
@@ -31,6 +33,16 @@ public class UserManager {
 			
 			return user;
 		}
+	}
+	
+	public Collection<GameUser> getUsers() {
+		return loggedInUsers.values();
+	}
+	
+	public void marryUpSessionAndUser(WebSocketSession session, GameUser userInfo) {
+		loggedInUsers.get(userInfo.userName).wsSession = session;
+		loggedInUsers.get(userInfo.userName).height = userInfo.height;
+		loggedInUsers.get(userInfo.userName).width = userInfo.width;
 	}
 
 }
