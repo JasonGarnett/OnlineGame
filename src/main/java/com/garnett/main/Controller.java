@@ -29,7 +29,7 @@ public class Controller {
 		
 		LOG.info("Request for " + whichBoard + " GameBoard from " + user.getUsername() + " TOP: " + topLeftX + "," + topLeftY + " SIZE: " + height + "," + width);
 		
-		GameBoard board = mgr.getBoard(whichBoard, topLeftX, topLeftY, height, width);
+		GameBoard board = mgr.getBoard(whichBoard, topLeftX, topLeftY, height, width, user.getUsername());
 		if (board != null)
 			return board;
 		else
@@ -38,10 +38,10 @@ public class Controller {
 	}
 	
 	@RequestMapping(value="/register", method=RequestMethod.GET)
-	public GameUser register(@AuthenticationPrincipal final UserDetails user) {
+	public GameUser register(@AuthenticationPrincipal final UserDetails user, @RequestParam int height, @RequestParam int width) {
 		
-		LOG.info("Registering user: " + user.getUsername());
+		LOG.info("Registering user: " + user.getUsername() + " Board Size: " + height + "x" + width);
 		
-		return userMgr.getUser(user.getUsername());
+		return userMgr.getUser(user.getUsername(), height, width);
 	}
 }

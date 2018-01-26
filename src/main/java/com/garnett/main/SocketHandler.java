@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.AbstractWebSocketMessage;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garnett.main.dao.GameBoardManager;
 import com.garnett.main.dao.UserManager;
 import com.garnett.model.GameAction;
+import com.garnett.model.GameBoard;
 import com.garnett.model.GameUser;
 import com.garnett.utilities.GameProperties;
 
@@ -47,8 +49,8 @@ public class SocketHandler extends TextWebSocketHandler {
     	WebSocketSession session = sessions.get(sessionId);
     	if (session != null && session.isOpen()) {
     		try {
-    			LOG.info("Sending message to " + sessionId);
-				session.sendMessage(new TextMessage(messageToSend));
+    			TextMessage msg = new TextMessage(messageToSend);
+				session.sendMessage(msg);
 			} catch (IOException e) {
 				LOG.error("Error sending message to " + sessionId, e);
 			}
@@ -76,12 +78,10 @@ public class SocketHandler extends TextWebSocketHandler {
             GameUser user = mapper.readValue(message.getPayload(), GameUser.class);
             LOG.info("Marrying up User: " + user.userName + " with WS Session: " + session.getId());
             userMgr.marryUpSessionAndUser(session, user);
-            session.sendMessage(new TextMessage("OK"));
         } else {
         	LOG.info(session.getId() + ": Game Action: " + message.getPayload());
         	GameAction action = mapper.readValue(message.getPayload(), GameAction.class);
         	boardMgr.handleGameAction(action);
-        	session.sendMessage(new TextMessage("OK"));
         }
     }
     
@@ -92,6 +92,7 @@ public class SocketHandler extends TextWebSocketHandler {
     		if (session.isOpen())
         		session.close();
     		 sessions.remove(session.getId());
+    		 userMgr.markUserInactive(session.getId());
     	}
     }
 }

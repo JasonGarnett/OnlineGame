@@ -18,6 +18,12 @@ castle1.src = 'images/images-castle-clipart-830x717.png';
 var castle2 = new Image();   
 castle2.src = 'images/castle-clip-art-2.png';
 
+var mountain = new Image();   
+mountain.src = 'images/Mountain-Clipart-PNG-02.png';
+
+//var forest = new Image();   
+//forest.src = 'images/forest-clipart-free.png';
+
 var gameModel;
 var grid = false;
 var selected;
@@ -27,7 +33,6 @@ var sessionInfo;
 
 function initialLoadBoard(topLeftX, topLeftY, whichBoard, wsLocation) {
 	
-	canvas = document.getElementById("gameBoard");
 	canvas.addEventListener("click", onClick, false);
 	//canvas.addEventListener("mouseover", onMouseOver, false);
 	
@@ -51,7 +56,10 @@ function initialLoadBoard(topLeftX, topLeftY, whichBoard, wsLocation) {
 }
 
 function register() {
-	$.get("/register", function(data, status) {
+	
+	canvas = document.getElementById("gameBoard");
+	
+	$.get("/register", {height: canvas.height/100, width: canvas.width/100}, function(data, status) {
 		sessionInfo = data;
 		initialLoadBoard(data.topLeftX, data.topLeftY, data.whichBoard, data.wsLocation);
 	});
@@ -91,10 +99,8 @@ function whichRelativeTile(pos) {
 
 function whichActualTile(pos) {
 	var rel = whichRelativeTile(pos);
-	return {
-		x: board.topLeft.x + rel.x,
-		y: board.topLeft.y + rel.y
-	};
+	
+	return relativeToActual(rel);
 }
 
 function getMousePos(e) {
@@ -133,8 +139,9 @@ function loadBoardCharacteristics(canvas, topX, topY) {
 function connect(wsAddr) {
 	ws = new WebSocket(wsAddr);
 	ws.onmessage = function(data){
-		gameBoard = data;
-		showGreeting(data.data);
+		//console.log(data.data);
+		gameModel = JSON.parse(data.data);
+		showGreeting(new Date(gameModel.update));
 	}
 	ws.onopen = function() {
 		sendMsg(sessionInfo);
@@ -152,8 +159,8 @@ function sendMsg(msg) {
     ws.send(JSON.stringify(msg));
 }
 
-function showGreeting(message) {
-    $("#greetings").html("Last Updated: " + (Date.now()));
+function showGreeting(date) {
+    $("#greetings").html("Last Updated: " + date);
 }
 
 function renderBoard() {
@@ -163,13 +170,27 @@ function renderBoard() {
 	gameModel.pieces.forEach(function(piece) {
 		if (piece.item == 1) {
 			drawPiece(castle1, piece.x, piece.y);
-		}
-		if (piece.item == 2) {
+		} else if (piece.item == 2) {
 			drawPiece(castle2, piece.x, piece.y);
+		} else if (piece.item == 3) {
+			drawPiece(mountain, piece.x, piece.y);
+		} //else if (piece.item == 4) {
+		//	drawPiece(mountain2, piece.x, piece.y);
+		//} //else if (piece.item == 5) {
+		//	drawPiece(forest, piece.x, piece.y);
+		//}
+		
+		if (piece.actions != null && piece.actions.length > 0) {
+			piece.actions.forEach(function(act) {
+				if (act.action === "clicked" && act.userName != sessionInfo.userName) {
+					drawBox(actualToRelative(piece), "red", act.userName);
+				}
+			});
 		}
-		if (piece.action != null && piece.action.action == "clicked") {
-			console.log(piece.x + "," + piece.y + " is clicked.");
-		}
+		//	.piece.action.action === "clicked" && piece.action.userName !== sessionInfo.userName) {
+		
+		//	drawBox(actualToRelative(piece), "red", piece.action.userName);
+		
 	});
 	
 	if (grid == true)
@@ -177,6 +198,8 @@ function renderBoard() {
 	
 	if (selected)
 		drawSelected();
+	
+	drawUserDetails();
 	
 //	if (hover)
 //		drawHover();
@@ -196,11 +219,18 @@ function yToPixel(pieceY) {
 	return relativeY * board.heightPerPiece;
 }
 
-function drawLine() {
-	ctx.moveTo(0,0);
-	ctx.lineTo(200,100);
-	ctx.stroke();
+function relativeToActual(relativeXy) {
+	return {
+		x: relativeXy.x + board.topLeft.x,
+		y: relativeXy.y + board.topLeft.y
+	}
+}
 
+function actualToRelative(actualXy) {
+	return {
+		x: actualXy.x - board.topLeft.x,
+		y: actualXy.y - board.topLeft.y
+	}
 }
 
 function drawGrid() {
@@ -223,18 +253,33 @@ function drawGrid() {
 }
 
 function drawSelected() {
+	var act = relativeToActual(selected);
+	drawBox(selected, "blue", act.x + "," + act.y);
+	
+}
+
+function drawUserDetails() {
+	ctx.beginPath();
+	//ctx.lineWidth = "0.5";
+	ctx.font="18px Arial";
+	var userDetails = gameModel.user.userName + "  Gold: " + gameModel.user.gold + "  Wood: " + gameModel.user.wood + "  Land: " + gameModel.user.land + "  Stone: " + gameModel.user.stone;
+	ctx.strokeText(userDetails, 10, 15);
+	
+}
+
+function drawBox(xy, color, text) {
 	ctx.beginPath();
 	ctx.lineWidth = "4";
-	ctx.strokeStyle = "blue"
-	ctx.rect(selected.x*board.widthPerPiece,
-			 selected.y*board.heightPerPiece,
+	ctx.strokeStyle = color;
+	ctx.rect(xy.x*board.widthPerPiece,
+			 xy.y*board.heightPerPiece,
 			 board.widthPerPiece,
 			 board.heightPerPiece);
 	ctx.stroke();
 	
 	ctx.lineWidth = "0.5";
-	ctx.font="10px Georgia";
-	ctx.strokeText((board.topLeft.x+selected.x)+","+(board.topLeft.y+selected.y), (selected.x*board.widthPerPiece)+5,(selected.y*board.heightPerPiece)+15);
+	ctx.font="12px Georgia";
+	ctx.strokeText(text, (xy.x*board.widthPerPiece)+5,(xy.y*board.heightPerPiece)+15);
 	
 }
 

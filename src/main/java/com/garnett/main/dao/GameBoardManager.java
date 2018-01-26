@@ -1,6 +1,8 @@
 package com.garnett.main.dao;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,11 +21,12 @@ public class GameBoardManager {
 
 	private static GameBoardManager instance = new GameBoardManager();
 	private Map<String,GameBoard> gameBoards;
-	final static Logger LOG = Logger.getLogger(Controller.class);
+	final static Logger LOG = Logger.getLogger(GameBoardManager.class);
 	private GameProperties props = GameProperties.getInstance();
 	private SocketHandler socketHandler;
 	private UserManager userMgr = UserManager.getInstance();
 	private ObjectMapper mapper = new ObjectMapper();
+	private static String USER_ACTION_CLICKED = "clicked";
 	
 	private GameBoardManager() {
 		
@@ -55,9 +58,10 @@ public class GameBoardManager {
 	
 	private void updateAllUsers() {
 		// TODO: Kick off threads to update all users at once.
-		userMgr.getUsers().forEach(user -> {
+		userMgr.getActiveUsers().forEach(user -> {
 			try {
-				String msgToSend = mapper.writeValueAsString(getBoard(user.whichBoard, user.topLeftX, user.topLeftY, user.height, user.width));
+				String msgToSend = mapper.writeValueAsString(getBoard(user.whichBoard, user.topLeftX, user.topLeftY, user.height, user.width, user.userName));
+			//	LOG.info(msgToSend);
 				socketHandler.sendToSession(user.wsSession.getId(), msgToSend);
 			} catch (Exception e) {
 				LOG.error("Error sending update to " + user.userName, e);
@@ -67,14 +71,39 @@ public class GameBoardManager {
 	
 	public void handleGameAction(GameAction action) {
 		LOG.info("Handling action " + action.action);
-		gameBoards.get(action.whichBoard).getPiece(action.x, action.y).action = action;
+		if (action.action.equals(USER_ACTION_CLICKED))
+			handleClicked(action);
+		else {
+			gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
+		}
+	}
+	
+	public void handleClicked(GameAction action) {
+		
+		// clear out their last click
+		gameBoards.get(action.whichBoard).pieces.forEach(piece -> {
+			List<GameAction> actionToRemove = new ArrayList<>();
+			piece.actions.forEach(pieceAction -> {
+				if (pieceAction.action.equals(USER_ACTION_CLICKED) && pieceAction.userName.equals(action.userName)) {
+					actionToRemove.add(pieceAction);
+					//piece.actions.remove(pieceAction);
+				}
+				actionToRemove.forEach(removed -> {
+					piece.actions.remove(removed);
+				});
+			});
+			//if (piece.action != null && piece.action.action.equals(USER_ACTION_CLICKED) && piece.action.userName.equals(action.userName)) {
+			//	piece.action = null;
+		//	}
+		});
+		gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
 	}
 	
 	public GameBoard getBoard(String boardName) { return gameBoards.get(boardName); }
 	
-	public GameBoard getBoard(String boardName, int topLeftX, int topLeftY, int height, int width) { 
+	public GameBoard getBoard(String boardName, int topLeftX, int topLeftY, int height, int width, String userName) { 
 		
-		GameBoard gb = new GameBoard(boardName,height, width);
+		GameBoard gb = new GameBoard(boardName, height, width);
 		gb.pieces = new ArrayList<>();
 		
 		for (int x=topLeftX; x<=(topLeftX+width)-1; x++) {
@@ -82,7 +111,8 @@ public class GameBoardManager {
 				gb.pieces.add(gameBoards.get(boardName).getPiece(x, y));
 			}
 		}
-		
+		gb.update = new Date();
+		gb.user = userMgr.getUser(userName, height, width);
 		return gb;
 	}
 	

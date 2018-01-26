@@ -1,9 +1,13 @@
 package com.garnett.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class Piece {
 
 	public int item;
-	public GameAction action;
+	public List<GameAction> actions;
 	public int x;
 	public int y;
 	
@@ -11,6 +15,7 @@ public class Piece {
 		this.item = item;
 		this.x = x;
 		this.y = y;
+		this.actions = Collections.synchronizedList(new ArrayList<>());
 	}
 	
 }

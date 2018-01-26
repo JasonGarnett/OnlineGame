@@ -17,15 +17,22 @@ public class GameUser {
 	public int topLeftY;
 	public int height;
 	public int width;
+	public int gold;
+	public int wood;
+	public int stone;
+	public int land;
+	public boolean isActive = false;
 	public WebSocketSession wsSession;
 	private GameProperties props = GameProperties.getInstance();
 	
 	public GameUser() { }
 	
-	public GameUser(String userName) {
+	public GameUser(String userName, int height, int width) {
 		this.userName = userName;
 		this.wsLocation = props.getProperty("ws");
 		this.whichBoard = findFreeBoard();
+		this.height = height;
+		this.width = width;
 		setLocation();
 	}
 
@@ -37,8 +44,14 @@ public class GameUser {
 	private void setLocation() {
 		// TODO: Find a free location to start with that is not too crowded
 		Random rand = new Random();
-		this.topLeftX = rand.nextInt(Integer.parseInt(props.getProperty("boardSize.width")));
-		this.topLeftY = rand.nextInt(Integer.parseInt(props.getProperty("boardSize.height")));
+		System.out.println("Generating Rand Width between 0 and " + (Integer.parseInt(props.getProperty("boardSize.width"))-width));
+		System.out.println("Generating Rand Width between 0 and " + (Integer.parseInt(props.getProperty("boardSize.height"))-height));
+		
+		int randHeight = rand.nextInt(Integer.parseInt(props.getProperty("boardSize.height"))-height);
+		int randWidth = rand.nextInt(Integer.parseInt(props.getProperty("boardSize.width"))-width);
+		
+		this.topLeftX = randHeight;
+		this.topLeftY = randWidth;
 	}
 	
 }
