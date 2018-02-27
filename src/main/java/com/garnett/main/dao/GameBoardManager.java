@@ -62,7 +62,7 @@ public class GameBoardManager {
 		userMgr.getActiveUsers().forEach(user -> {
 			try {
 				String msgToSend = mapper.writeValueAsString(getBoard(user.whichBoard, user.topLeftX, user.topLeftY, user.height, user.width, user.userName));
-			//	LOG.info(msgToSend);
+				//LOG.info(msgToSend);
 				socketHandler.sendToSession(user.wsSession.getId(), msgToSend);
 			} catch (Exception e) {
 				LOG.error("Error sending update to " + user.userName, e);
@@ -120,6 +120,8 @@ public class GameBoardManager {
 		}
 		gb.update = new Date();
 		gb.user = userMgr.getUser(userName, height, width);
+		gb.topLeftX = topLeftX;
+		gb.topLeftY = topLeftY;
 		return gb;
 	}
 	

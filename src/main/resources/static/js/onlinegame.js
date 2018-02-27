@@ -185,6 +185,8 @@ function connect(wsAddr) {
 	ws.onmessage = function(data){
 		//console.log(data.data);
 		gameModel = JSON.parse(data.data);
+		board.topLeft.x = gameModel.topLeftX;
+		board.topLeft.y = gameModel.topLeftY;
 		showGreeting(new Date(gameModel.update));
 	}
 	ws.onopen = function() {
