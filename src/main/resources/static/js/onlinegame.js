@@ -35,6 +35,9 @@ function initialLoadBoard(topLeftX, topLeftY, whichBoard, wsLocation) {
 	
 	canvas.addEventListener("click", onClick, false);
 	//canvas.addEventListener("mouseover", onMouseOver, false);
+	canvas.addEventListener("mousedown", onDrag, false);
+	canvas.addEventListener("mouseup", onDrag, false);
+	
 	
 	ctx = canvas.getContext("2d");
 	loadBoardCharacteristics(canvas, topLeftX, topLeftY);
@@ -62,7 +65,12 @@ function register() {
 	$.get("/register", {height: canvas.height/100, width: canvas.width/100}, function(data, status) {
 		sessionInfo = data;
 		initialLoadBoard(data.topLeftX, data.topLeftY, data.whichBoard, data.wsLocation);
+		buildMoveButtons();
 	});
+}
+
+function onDrag(e) {
+	 console.log(e.clientX + " " + e.clientY);
 }
 
 function onClick(e) {
@@ -77,6 +85,42 @@ function onClick(e) {
 	console.log("Actual " + act.x + "," + act.y);
 	
 	act.action = "clicked";
+	act.userName = sessionInfo.userName;
+	act.whichBoard = sessionInfo.whichBoard;
+	
+	sendMsg(act);
+}
+
+function move(dir) {
+	
+	if (dir === "up") {
+		moveMap(board.topLeft.x, board.topLeft.y - 1);
+	} else if (dir === "down") {
+		moveMap(board.topLeft.x, board.topLeft.y + 1);
+	} else if (dir === "left") {
+		moveMap(board.topLeft.x - 1, board.topLeft.y);
+	} else if (dir === "right") {
+		moveMap(board.topLeft.x + 1, board.topLeft.y);
+	}
+	
+}
+
+function buildMoveButtons() {
+	var btns = "<button name=\"upBtn\" id=\"upBtn\" onClick=\"move('up'); \" type=\"button\" class=\"btn\">Up</button>";
+	btns += "<button name=\"downBtn\" id=\"downBtn\" onClick=\"move('down'); \" type=\"button\" class=\"btn\">Down</button>";
+	btns += "<button name=\"leftBtn\" id=\"leftBtn\" onClick=\"move('left'); \" type=\"button\" class=\"btn\">Left</button>";
+	btns += "<button name=\"rightBtn\" id=\"rightBtn\" onClick=\"move('right'); \" type=\"button\" class=\"btn\">Right</button>";
+	
+	$("#moveButtons").html(btns);
+}
+
+function moveMap(x, y) {
+	var act = {x: x,
+			   y: y };
+	
+	console.log("Moving to Actual " + act.x + "," + act.y);
+	
+	act.action = "mappan";
 	act.userName = sessionInfo.userName;
 	act.whichBoard = sessionInfo.whichBoard;
 	

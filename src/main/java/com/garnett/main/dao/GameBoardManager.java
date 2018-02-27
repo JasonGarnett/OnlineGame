@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.garnett.main.Controller;
 import com.garnett.main.SocketHandler;
 import com.garnett.model.GameAction;
 import com.garnett.model.GameBoard;
@@ -27,6 +26,8 @@ public class GameBoardManager {
 	private UserManager userMgr = UserManager.getInstance();
 	private ObjectMapper mapper = new ObjectMapper();
 	private static String USER_ACTION_CLICKED = "clicked";
+	private static String MAP_PAN = "mappan";
+	private Object lock = "";
 	
 	private GameBoardManager() {
 		
@@ -71,10 +72,14 @@ public class GameBoardManager {
 	
 	public void handleGameAction(GameAction action) {
 		LOG.info("Handling action " + action.action);
-		if (action.action.equals(USER_ACTION_CLICKED))
-			handleClicked(action);
-		else {
-			gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
+		synchronized (lock) {
+			if (action.action.equals(USER_ACTION_CLICKED))
+				handleClicked(action);
+			else if (action.action.equals(MAP_PAN)) {
+				handleMove(action);
+			} else {
+				gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
+			}
 		}
 	}
 	
@@ -86,17 +91,19 @@ public class GameBoardManager {
 			piece.actions.forEach(pieceAction -> {
 				if (pieceAction.action.equals(USER_ACTION_CLICKED) && pieceAction.userName.equals(action.userName)) {
 					actionToRemove.add(pieceAction);
-					//piece.actions.remove(pieceAction);
 				}
-				actionToRemove.forEach(removed -> {
-					piece.actions.remove(removed);
-				});
 			});
-			//if (piece.action != null && piece.action.action.equals(USER_ACTION_CLICKED) && piece.action.userName.equals(action.userName)) {
-			//	piece.action = null;
-		//	}
+			actionToRemove.forEach(removed -> {
+				piece.actions.remove(removed);
+			});
+
 		});
+		// add their current click
 		gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
+	}
+	
+	public void handleMove(GameAction action) {
+		userMgr.moveUser(action.userName, action.x, action.y);
 	}
 	
 	public GameBoard getBoard(String boardName) { return gameBoards.get(boardName); }

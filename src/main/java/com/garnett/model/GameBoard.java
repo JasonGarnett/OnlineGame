@@ -1,7 +1,7 @@
 package com.garnett.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
+//import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -10,7 +10,7 @@ public class GameBoard {
 	public String name;
 	public int height;
 	public int width;
-	public List<Piece> pieces = Collections.synchronizedList(new ArrayList<>());
+	public List<Piece> pieces = new ArrayList<>();
 	public Date update;
 	public GameUser user;
 	

@@ -36,6 +36,11 @@ public class UserManager {
 		}
 	}
 	
+	public void moveUser(String username, int newX, int newY) {
+		loggedInUsers.get(username).topLeftX = newX;
+		loggedInUsers.get(username).topLeftY = newY;
+	}
+	
 	public Collection<GameUser> getUsers() {
 		return loggedInUsers.values();
 	}
