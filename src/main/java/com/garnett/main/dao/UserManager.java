@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.garnett.main.Controller;
 import com.garnett.model.GameUser;
 
 public class UserManager {
@@ -39,6 +38,11 @@ public class UserManager {
 	public void moveUser(String username, int newX, int newY) {
 		loggedInUsers.get(username).topLeftX = newX;
 		loggedInUsers.get(username).topLeftY = newY;
+	}
+	
+	public void changeUserBoardSize(String username, int height, int width) {
+		loggedInUsers.get(username).height = height;
+		loggedInUsers.get(username).width = width;
 	}
 	
 	public Collection<GameUser> getUsers() {

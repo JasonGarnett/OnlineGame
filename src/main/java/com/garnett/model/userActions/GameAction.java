@@ -1,4 +1,4 @@
-package com.garnett.model;
+package com.garnett.model.userActions;
 
 public class GameAction {
 
@@ -6,7 +6,7 @@ public class GameAction {
 	public int y;
 	public String userName;
 	public String whichBoard;
-	public String action;
+	public ActionDetail detail;
 	
 	public GameAction(){}
 	

@@ -11,9 +11,12 @@ import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garnett.main.SocketHandler;
-import com.garnett.model.GameAction;
 import com.garnett.model.GameBoard;
 import com.garnett.model.Piece;
+import com.garnett.model.userActions.Click;
+import com.garnett.model.userActions.GameAction;
+import com.garnett.model.userActions.MapPan;
+import com.garnett.model.userActions.Zoom;
 import com.garnett.utilities.GameProperties;
 
 public class GameBoardManager {
@@ -26,7 +29,8 @@ public class GameBoardManager {
 	private UserManager userMgr = UserManager.getInstance();
 	private ObjectMapper mapper = new ObjectMapper();
 	private static String USER_ACTION_CLICKED = "clicked";
-	private static String MAP_PAN = "mappan";
+	private static String USER_ACTION_MAP_PAN = "mappan";
+	private static String USER_ACTION_ZOOM = "zoom";
 	private Object lock = "";
 	
 	private GameBoardManager() {
@@ -71,12 +75,14 @@ public class GameBoardManager {
 	}
 	
 	public void handleGameAction(GameAction action) {
-		LOG.info("Handling action " + action.action);
+		LOG.info("Handling action " + action.detail.getClass());
 		synchronized (lock) {
-			if (action.action.equals(USER_ACTION_CLICKED))
+			if (action.detail instanceof Click)
 				handleClicked(action);
-			else if (action.action.equals(MAP_PAN)) {
+			else if (action.detail instanceof MapPan) {
 				handleMove(action);
+			} else if (action.detail instanceof Zoom) {
+				handleZoom(action);
 			} else {
 				gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
 			}
@@ -89,21 +95,27 @@ public class GameBoardManager {
 		gameBoards.get(action.whichBoard).pieces.forEach(piece -> {
 			List<GameAction> actionToRemove = new ArrayList<>();
 			piece.actions.forEach(pieceAction -> {
-				if (pieceAction.action.equals(USER_ACTION_CLICKED) && pieceAction.userName.equals(action.userName)) {
+				if (pieceAction.detail instanceof Click && pieceAction.userName.equals(action.userName)) {
 					actionToRemove.add(pieceAction);
 				}
 			});
 			actionToRemove.forEach(removed -> {
 				piece.actions.remove(removed);
+				LOG.info("removing " + removed.userName + " from " + removed.x + "," + removed.y);
 			});
 
 		});
 		// add their current click
+		LOG.info("Adding to " + action.x + "," + action.y);
 		gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
 	}
 	
 	public void handleMove(GameAction action) {
 		userMgr.moveUser(action.userName, action.x, action.y);
+	}
+	
+	public void handleZoom(GameAction action) {
+		userMgr.changeUserBoardSize(action.userName, ((Zoom)action.detail).newHeight, ((Zoom)action.detail).newWidth);
 	}
 	
 	public GameBoard getBoard(String boardName) { return gameBoards.get(boardName); }

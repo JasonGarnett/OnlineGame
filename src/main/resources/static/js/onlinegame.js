@@ -37,6 +37,7 @@ function initialLoadBoard(topLeftX, topLeftY, whichBoard, wsLocation) {
 	//canvas.addEventListener("mouseover", onMouseOver, false);
 	canvas.addEventListener("mousedown", onDrag, false);
 	canvas.addEventListener("mouseup", onDrag, false);
+	canvas.addEventListener("mousewheel", onMouseWheel, false);
 	
 	
 	ctx = canvas.getContext("2d");
@@ -73,6 +74,37 @@ function onDrag(e) {
 	 console.log(e.clientX + " " + e.clientY);
 }
 
+function onMouseWheel(e) {
+	zoom(e.wheelDelta/120);
+	 if ((e.wheelDelta/120) > 0) {
+		 console.log("Zooming in to " + e.clientX + " " + e.clientY);
+	 } else {
+		 console.log("Zooming out from " + e.clientX + " " + e.clientY);
+	 }
+}
+
+function zoom(where) {
+	if (where > 0) {
+		board.heightPerPiece = board.heightPerPiece + 1;
+		board.widthPerPiece = board.widthPerPiece + 1;
+	} else {
+		board.heightPerPiece = board.heightPerPiece - 1;
+		board.widthPerPiece = board.widthPerPiece - 1;
+	}
+	board.heightInPieces = Math.ceil(canvas.height / board.heightPerPiece);
+	board.widthInPieces = Math.ceil(canvas.width / board.widthPerPiece);
+	
+	console.log("new height: " + board.heightInPieces + "::new width: " + board.widthInPieces)
+	
+	var msg = buildMsgStub("zoom");
+	msg.x = 0;
+	msg.y = 0;
+	msg.detail.newHeight = board.heightInPieces
+	msg.detail.newWidth = board.widthInPieces;
+	
+	sendMsg(msg);
+}
+
 function onClick(e) {
 	var pos = getMousePos(e);
 	console.log("click on " + pos.x + "," + pos.y);
@@ -83,12 +115,22 @@ function onClick(e) {
 	
 	var act = whichActualTile(pos);
 	console.log("Actual " + act.x + "," + act.y);
+	var msg = buildMsgStub("clicked");
+	msg.x = act.x;
+	msg.y = act.y;
 	
-	act.action = "clicked";
-	act.userName = sessionInfo.userName;
-	act.whichBoard = sessionInfo.whichBoard;
+	sendMsg(msg);
+}
+
+function buildMsgStub(action) {
 	
-	sendMsg(act);
+	var msg = {};
+	msg.detail = {}
+	msg.detail.type = action;
+	msg.userName = sessionInfo.userName;
+	msg.whichBoard = sessionInfo.whichBoard;
+	
+	return msg;
 }
 
 function move(dir) {
@@ -114,17 +156,21 @@ function buildMoveButtons() {
 	$("#moveButtons").html(btns);
 }
 
+//function buildZoomButtons() {
+//	var btns = "<button name=\"inBtn\" id=\"inBtn\" onClick=\"zoom(1); \" type=\"button\" class=\"btn\">Zoom In</button>";
+//	btns += "<button name=\"outBtn\" id=\"outBtn\" onClick=\"zoom(-1); \" type=\"button\" class=\"btn\">Zoom Out</button>";
+//	
+//	$("#zoomButtons").html(btns);
+//}
+
 function moveMap(x, y) {
-	var act = {x: x,
-			   y: y };
 	
-	console.log("Moving to Actual " + act.x + "," + act.y);
+	console.log("Moving to Actual " + x + "," + y);
+	var msg = buildMsgStub("mappan");
+	msg.x = x;
+	msg.y = y;
 	
-	act.action = "mappan";
-	act.userName = sessionInfo.userName;
-	act.whichBoard = sessionInfo.whichBoard;
-	
-	sendMsg(act);
+	sendMsg(msg);
 }
 
 function onMouseOver(e) {
@@ -228,7 +274,7 @@ function renderBoard() {
 		
 		if (piece.actions != null && piece.actions.length > 0) {
 			piece.actions.forEach(function(act) {
-				if (act.action === "clicked" && act.userName != sessionInfo.userName) {
+				if (act.detail.type === "clicked" && act.userName != sessionInfo.userName) {
 					drawBox(actualToRelative(piece), "red", act.userName);
 				}
 			});
@@ -283,17 +329,19 @@ function drawGrid() {
 
 	ctx.lineWidth = "1";
 	ctx.strokeStyle = "black";
+	// Draw Vertical Lines
 	for (var x = 0; x <= canvas.width-1; x = x + board.widthPerPiece) {
 		ctx.beginPath();
 		ctx.moveTo(x, 0);
-		ctx.lineTo(x, canvas.width);
+		ctx.lineTo(x, canvas.height);
 		ctx.stroke();
 	}
 	
+	// Draw Hoizontal Lines
 	for (var y=0; y<=canvas.height-1; y+=board.heightPerPiece) {
 		ctx.beginPath();
 		ctx.moveTo(0 , y);
-		ctx.lineTo(canvas.height, y);
+		ctx.lineTo(canvas.width, y);
 		ctx.stroke();
 	}
 }

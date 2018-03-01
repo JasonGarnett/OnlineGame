@@ -15,9 +15,9 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garnett.main.dao.GameBoardManager;
 import com.garnett.main.dao.UserManager;
-import com.garnett.model.GameAction;
 import com.garnett.model.GameBoard;
 import com.garnett.model.GameUser;
+import com.garnett.model.userActions.GameAction;
 import com.garnett.utilities.GameProperties;
 
 

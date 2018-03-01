@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.garnett.model.userActions.GameAction;
+
 public class Piece {
 
 	public int item;
