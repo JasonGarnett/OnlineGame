@@ -21,6 +21,9 @@ castle2.src = 'images/castle-clip-art-2.png';
 var mountain = new Image();   
 mountain.src = 'images/Mountain-Clipart-PNG-02.png';
 
+var MAX_ZOOM_IN = 8;
+var MAX_ZOOM_OUT = 30;
+
 //var forest = new Image();   
 //forest.src = 'images/forest-clipart-free.png';
 
@@ -38,6 +41,7 @@ function initialLoadBoard(topLeftX, topLeftY, whichBoard, wsLocation) {
 	canvas.addEventListener("mousedown", onDrag, false);
 	canvas.addEventListener("mouseup", onDrag, false);
 	canvas.addEventListener("mousewheel", onMouseWheel, false);
+	window.addEventListener("keydown", onKeyDown, false);
 	
 	
 	ctx = canvas.getContext("2d");
@@ -75,6 +79,7 @@ function onDrag(e) {
 }
 
 function onMouseWheel(e) {
+		
 	zoom(e.wheelDelta/120);
 	 if ((e.wheelDelta/120) > 0) {
 		 console.log("Zooming in to " + e.clientX + " " + e.clientY);
@@ -84,25 +89,30 @@ function onMouseWheel(e) {
 }
 
 function zoom(where) {
-	if (where > 0) {
-		board.heightPerPiece = board.heightPerPiece + 1;
-		board.widthPerPiece = board.widthPerPiece + 1;
+	if (((where > 0) && (board.heightInPieces > MAX_ZOOM_IN || board.widthInPieces > MAX_ZOOM_IN)) || 
+		((where < 0) && (board.heightInPieces < MAX_ZOOM_OUT || board.widthInPieces < MAX_ZOOM_OUT))	) {
+		if (where > 0) {
+			board.heightPerPiece = board.heightPerPiece + 1;
+			board.widthPerPiece = board.widthPerPiece + 1;
+		} else {
+			board.heightPerPiece = board.heightPerPiece - 1;
+			board.widthPerPiece = board.widthPerPiece - 1;
+		}
+		board.heightInPieces = Math.ceil(canvas.height / board.heightPerPiece);
+		board.widthInPieces = Math.ceil(canvas.width / board.widthPerPiece);
+		
+		console.log("new height: " + board.heightInPieces + "::new width: " + board.widthInPieces)
+		
+		var msg = buildMsgStub("zoom");
+		msg.x = 0;
+		msg.y = 0;
+		msg.detail.newHeight = board.heightInPieces
+		msg.detail.newWidth = board.widthInPieces;
+		
+		sendMsg(msg);
 	} else {
-		board.heightPerPiece = board.heightPerPiece - 1;
-		board.widthPerPiece = board.widthPerPiece - 1;
+		console.log("Max zoom reached");
 	}
-	board.heightInPieces = Math.ceil(canvas.height / board.heightPerPiece);
-	board.widthInPieces = Math.ceil(canvas.width / board.widthPerPiece);
-	
-	console.log("new height: " + board.heightInPieces + "::new width: " + board.widthInPieces)
-	
-	var msg = buildMsgStub("zoom");
-	msg.x = 0;
-	msg.y = 0;
-	msg.detail.newHeight = board.heightInPieces
-	msg.detail.newWidth = board.widthInPieces;
-	
-	sendMsg(msg);
 }
 
 function onClick(e) {
@@ -133,16 +143,30 @@ function buildMsgStub(action) {
 	return msg;
 }
 
+function onKeyDown(e) {
+	
+	var code = e.keyCode;
+	
+	switch (code) {
+    	case 37: move("left"); break; //Left key
+    	case 38: move("up"); break; //Up key
+    	case 39: move("right"); break; //Right key
+    	case 40: move("down"); break; //Down key
+	}	
+}
+
 function move(dir) {
 	
-	if (dir === "up") {
+	if (dir === "up" && board.topLeft.y > 0) {
 		moveMap(board.topLeft.x, board.topLeft.y - 1);
 	} else if (dir === "down") {
 		moveMap(board.topLeft.x, board.topLeft.y + 1);
-	} else if (dir === "left") {
+	} else if (dir === "left" && board.topLeft.x > 0) {
 		moveMap(board.topLeft.x - 1, board.topLeft.y);
 	} else if (dir === "right") {
 		moveMap(board.topLeft.x + 1, board.topLeft.y);
+	} else {
+		console.log("Illegal move");
 	}
 	
 }
