@@ -276,10 +276,10 @@ var Renderer = function(c) {
 	castle2.src = 'images/Castle_Zoom.png';
 
 	var mountain = new Image();   
-	mountain.src = 'images/Mountain-Clipart-PNG-02.png';
+	mountain.src = 'images/Mountain_Range.png';
 	
 	var forest = new Image();   
-	forest.src = 'images/Trees_1.png';
+	forest.src = 'images/Trees_3.png';
 	
 	var forest2 = new Image();   
 	forest2.src = 'images/Trees_2.png';
@@ -420,7 +420,7 @@ var Renderer = function(c) {
 
 	function renderBoard() {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		ctx.fillStyle = "green";
+		ctx.fillStyle = "#A87D2B";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		controller.getGameModel().pieces.forEach(function(piece) {
 		
