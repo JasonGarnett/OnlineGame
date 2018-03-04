@@ -33,6 +33,10 @@ public class GameUser {
 		this.whichBoard = findFreeBoard();
 		this.height = height;
 		this.width = width;
+		this.gold = 100;
+		this.wood = 100;
+		this.stone = 100;
+		
 		setLocation();
 	}
 

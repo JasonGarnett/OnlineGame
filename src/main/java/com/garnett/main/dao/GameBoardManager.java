@@ -65,6 +65,7 @@ public class GameBoardManager {
 		// TODO: Kick off threads to update all users at once.
 		userMgr.getActiveUsers().forEach(user -> {
 			try {
+				user.gold++;
 				String msgToSend = mapper.writeValueAsString(getBoard(user.whichBoard, user.topLeftX, user.topLeftY, user.height, user.width, user.userName));
 				//LOG.info(msgToSend);
 				socketHandler.sendToSession(user.wsSession.getId(), msgToSend);

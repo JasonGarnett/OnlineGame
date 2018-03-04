@@ -31,6 +31,7 @@ public class UserManager {
 			GameUser user = new GameUser(username, height, width);
 			loggedInUsers.put(username, user);
 			
+			
 			return user;
 		}
 	}

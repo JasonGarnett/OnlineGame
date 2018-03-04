@@ -12,6 +12,8 @@ public class Piece {
 	public List<GameAction> actions;
 	public int x;
 	public int y;
+	public String owner;
+	public String ownerColor;
 	
 	public Piece(int item, int x, int y) {
 		this.item = item;
