@@ -15,6 +15,8 @@ public class Piece {
 	public String owner;
 	public String ownerColor;
 	
+	public Piece(){}
+	
 	public Piece(int item, int x, int y) {
 		this.item = item;
 		this.x = x;
@@ -22,4 +24,8 @@ public class Piece {
 		this.actions = Collections.synchronizedList(new ArrayList<>());
 	}
 	
+	public void setOwner(String user, String color) {
+		this.owner = user;
+		this.ownerColor = color;
+	}
 }

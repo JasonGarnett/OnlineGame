@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garnett.main.SocketHandler;
 import com.garnett.model.GameBoard;
+import com.garnett.model.GameUser;
 import com.garnett.model.Piece;
 import com.garnett.model.userActions.Click;
 import com.garnett.model.userActions.GameAction;
@@ -31,6 +32,7 @@ public class GameBoardManager {
 	private static String USER_ACTION_CLICKED = "clicked";
 	private static String USER_ACTION_MAP_PAN = "mappan";
 	private static String USER_ACTION_ZOOM = "zoom";
+	private Random rand = new Random();
 	private Object lock = "";
 	
 	private GameBoardManager() {
@@ -60,6 +62,44 @@ public class GameBoardManager {
 	}
 	
 	public static GameBoardManager getInstance() { return instance; }
+	
+	public GameUser addUser(String username, int height, int width) {
+		
+		if (userMgr.isUserActive(username))
+			return userMgr.getUser(username);
+		else {
+			GameBoard board = findFreeBoard();
+			int[] loc = getFreeLocation(board);
+			
+			GameUser newUser = userMgr.createNewUser(username, height, width, findFreeBoard().name, loc[0], loc[1]);
+			board.getPiece(loc[0], loc[1]).setOwner(newUser.userName, newUser.color);
+			newUser.ownedPieces.add(board.getPiece(loc[0], loc[1]));
+			
+			return newUser;
+		}
+	}
+	
+	private GameBoard findFreeBoard() {
+		// TODO: Find board with fewest active users
+		return gameBoards.get("whatever");
+	}
+
+	private int[] getFreeLocation(GameBoard gameBoard) {
+		// TODO: Find a free location to start with that is not too crowded
+		
+		int x, y;
+		
+		do {
+			System.out.println("Generating Rand Width between 0 and " + (gameBoard.width - 20));
+			System.out.println("Generating Rand Width between 0 and " + (gameBoard.height - 20));
+			
+			x = rand.nextInt(gameBoard.width - 20);
+			y = rand.nextInt(gameBoard.width - 20);
+		} while (!gameBoard.isFree(x, y));
+		
+		int[] temp = {x, y};
+		return temp;
+	}
 	
 	private void updateAllUsers() {
 		// TODO: Kick off threads to update all users at once.
@@ -132,7 +172,7 @@ public class GameBoardManager {
 			}
 		}
 		gb.update = new Date();
-		gb.user = userMgr.getUser(userName, height, width);
+		gb.user = userMgr.getUser(userName);
 		gb.topLeftX = topLeftX;
 		gb.topLeftY = topLeftY;
 		return gb;

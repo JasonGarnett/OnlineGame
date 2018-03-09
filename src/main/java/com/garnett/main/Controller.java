@@ -42,6 +42,6 @@ public class Controller {
 		
 		LOG.info("Registering user: " + user.getUsername() + " Board Size: " + height + "x" + width);
 		
-		return userMgr.getUser(user.getUsername(), height, width);
+		return mgr.addUser(user.getUsername(), height, width);
 	}
 }

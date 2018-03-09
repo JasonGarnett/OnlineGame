@@ -1,5 +1,8 @@
 package com.garnett.model;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.springframework.web.socket.WebSocketSession;
@@ -11,6 +14,7 @@ import com.garnett.utilities.GameProperties;
 public class GameUser {
 
 	public String userName;
+	public String color;
 	public String wsLocation;
 	public String whichBoard;
 	public int topLeftX;
@@ -22,40 +26,25 @@ public class GameUser {
 	public int stone;
 	public int land;
 	public boolean isActive = false;
+	public List<Piece> ownedPieces;
 	public WebSocketSession wsSession;
 	private GameProperties props = GameProperties.getInstance();
+	private Random rand = new Random();
 	
 	public GameUser() { }
 	
-	public GameUser(String userName, int height, int width) {
+	public GameUser(String userName, int height, int width, String board, int topLeftX, int topLeftY) {
 		this.userName = userName;
 		this.wsLocation = props.getProperty("ws");
-		this.whichBoard = findFreeBoard();
 		this.height = height;
 		this.width = width;
 		this.gold = 100;
 		this.wood = 100;
 		this.stone = 100;
-		
-		setLocation();
+		this.color = "#" + Integer.toHexString((new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()).getRGB())).substring(2);
+		this.ownedPieces = new ArrayList<>();
+		this.topLeftX = topLeftX;
+		this.topLeftY = topLeftY;
+		this.whichBoard = board;
 	}
-
-	private String findFreeBoard() {
-		// TODO: Find board with fewest active users
-		return "whatever";
-	}
-	
-	private void setLocation() {
-		// TODO: Find a free location to start with that is not too crowded
-		Random rand = new Random();
-		System.out.println("Generating Rand Width between 0 and " + (Integer.parseInt(props.getProperty("boardSize.width"))-width));
-		System.out.println("Generating Rand Width between 0 and " + (Integer.parseInt(props.getProperty("boardSize.height"))-height));
-		
-		int randHeight = rand.nextInt(Integer.parseInt(props.getProperty("boardSize.height"))-height);
-		int randWidth = rand.nextInt(Integer.parseInt(props.getProperty("boardSize.width"))-width);
-		
-		this.topLeftX = randHeight;
-		this.topLeftY = randWidth;
-	}
-	
 }

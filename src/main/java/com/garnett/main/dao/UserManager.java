@@ -16,26 +16,29 @@ public class UserManager {
 	private Map<String, GameUser> loggedInUsers;
 	final static Logger LOG = Logger.getLogger(UserManager.class);
 	
+	
 	private UserManager() {
 		loggedInUsers = new ConcurrentHashMap<>();
 	}
 	
 	public static UserManager getInstance() { return instance; }
 	
-	public GameUser getUser(String username, int height, int width) {
-		if (loggedInUsers.containsKey(username)) {
-		//	LOG.info(username + " is already registered, returning previous session.");
-			return loggedInUsers.get(username);
-		} else {
-			LOG.info(username + " is new, creating new session for them.");
-			GameUser user = new GameUser(username, height, width);
-			loggedInUsers.put(username, user);
+	public GameUser createNewUser(String username, int height, int width, String board, int topLeftX, int topLeftY) {
+		LOG.info(username + " is new, creating new session for them.");
+		GameUser user = new GameUser(username, height, width, board, topLeftX, topLeftY);
+		loggedInUsers.put(username, user);
 			
-			
-			return user;
-		}
+		return user;
 	}
 	
+	public boolean isUserActive(String username) {
+		return loggedInUsers.containsKey(username);
+	}
+	
+	public GameUser getUser(String username) {
+		return loggedInUsers.get(username);		
+	}
+		
 	public void moveUser(String username, int newX, int newY) {
 		loggedInUsers.get(username).topLeftX = newX;
 		loggedInUsers.get(username).topLeftY = newY;

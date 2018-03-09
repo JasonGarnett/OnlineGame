@@ -30,4 +30,10 @@ public class GameBoard {
 		return null;
 	}
 	
+	public boolean isFree(int x, int y) {
+		Piece p = getPiece(x, y);
+		
+		// Possibly only return true if is not owned and maybe not a mountain or something?
+		return p.owner == null;
+	}
 }

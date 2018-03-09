@@ -187,7 +187,7 @@ var Controller = function() {
 		tileSelected: function(x,y) {
 			gameModel.pieces.forEach(function(piece) {
 				if (piece.x === x && piece.y === y) {
-					var btns = "<b>Land Owned by: " + ((piece.owner != null) || "No one") + "<p><p>";
+					var btns = "<b>Land Owned by: " + (piece.owner || "No one") + "<p><p>";
 					if (piece.item === 1 || piece.item === 2) {
 						btns += "<button name=\"downBtn\" id=\"downBtn\" onClick=\"move('down'); \" type=\"button\" class=\"btn\">Build Knight</button>";
 					}
@@ -359,6 +359,25 @@ var Renderer = function(c) {
 		
 	}
 	
+	function drawOwned(xy, color, text) {
+		ctx.beginPath();
+		ctx.lineWidth = "1";
+		ctx.strokeStyle = color;
+		ctx.fillStyle = color;
+		ctx.globalAlpha= 0.3;
+		ctx.fillRect(xy.x*controller.getBoard().widthPerPiece,
+				 xy.y*controller.getBoard().heightPerPiece,
+				 controller.getBoard().widthPerPiece,
+				 controller.getBoard().heightPerPiece);
+		ctx.stroke();
+		ctx.globalAlpha = 1.0;
+
+		ctx.lineWidth = "0.5";
+		ctx.font="12px Georgia";
+		ctx.strokeText(text, (xy.x*controller.getBoard().widthPerPiece)+5,(xy.y*controller.getBoard().heightPerPiece)+15);
+		
+	}
+	
 	function drawPiece(item, x, y) {
 		if (item == 1) {
 			ctx.drawImage(castle1, controller.xToPixel(x), controller.yToPixel(y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
@@ -376,7 +395,7 @@ var Renderer = function(c) {
 	
 	function drawSelected() {
 		var act = controller.relativeToActual(selected);
-		drawBox(selected, "blue", act.x + "," + act.y);
+		drawBox(selected, controller.getSessionInfo().color, act.x + "," + act.y);
 		
 	}
 	
@@ -405,8 +424,9 @@ var Renderer = function(c) {
 		ctx.beginPath();
 		//ctx.lineWidth = "0.5";
 		ctx.font="18px Arial";
+		ctx.fillStyle = controller.getGameModel().user.color;
 		var userDetails = controller.getGameModel().user.userName + "  Gold: " +  controller.getGameModel().user.gold + "  Wood: " +  controller.getGameModel().user.wood + 
-						  "  Land: " +  controller.getGameModel().user.land + "  Stone: " +  controller.getGameModel().user.stone;
+						  "  Land: " +  controller.getGameModel().user.land + "  Stone: " +  controller.getGameModel().user.stone + " COLOR: " + controller.getSessionInfo().color;
 		ctx.strokeText(userDetails, 10, 15);
 		
 	}
@@ -432,6 +452,10 @@ var Renderer = function(c) {
 						drawBox(controller.actualToRelative(piece), "red", act.userName);
 					}
 				});
+			}
+			
+			if (piece.owner != null) {
+				drawOwned(controller.actualToRelative(piece), piece.ownerColor, piece.owner);
 			}
 			
 		});
