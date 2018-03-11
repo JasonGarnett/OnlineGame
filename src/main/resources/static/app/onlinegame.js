@@ -17,6 +17,14 @@ function toggleGrid() {
 	renderer.toggleGrid();
 }
 
+function conquer(x,y) {
+	controller.conquer(x,y);
+}
+
+function build(item, x, y) {
+	controller.build(item,x,y);
+}
+
 
 // Controller Code
 
@@ -188,14 +196,27 @@ var Controller = function() {
 			gameModel.pieces.forEach(function(piece) {
 				if (piece.x === x && piece.y === y) {
 					var btns = "<b>Land Owned by: " + (piece.owner || "No one") + "<p><p>";
-					if (piece.item === 1 || piece.item === 2) {
-						btns += "<button name=\"downBtn\" id=\"downBtn\" onClick=\"move('down'); \" type=\"button\" class=\"btn\">Build Knight</button>";
+					if (piece.owner === sessionInfo.userName && piece.item === 1) { // Mountain
+						btns += "<button name=\"downBtn\" id=\"downBtn\" onClick=\"build('mine'," + x + "," + y + "); \" type=\"button\" class=\"btn\">Build Mine</button>";
 					}
-					if (piece.item === 3) {
-						btns += "<button name=\"downBtn\" id=\"downBtn\" onClick=\"move('down'); \" type=\"button\" class=\"btn\">Build Mine</button>";
+					else if (piece.owner === sessionInfo.userName && (piece.item === 2 || piece.item === 3 )) { // Forest
+						btns += "<button name=\"downBtn\" id=\"downBtn\" onClick=\"build('mill'," + x + "," + y + "); \" type=\"button\" class=\"btn\">Build Lumber Mill</button>";
 					}
-					if (piece.item === 4 || piece.item === 5 ) {
-						btns += "<button name=\"downBtn\" id=\"downBtn\" onClick=\"move('down'); \" type=\"button\" class=\"btn\">Build Lumber Mill</button>";
+					else if (piece.owner === sessionInfo.userName){ // Plains
+						btns += "<button name=\"downBtn\" id=\"downBtn\" onClick=\"build('farm'," + x + "," + y + "); \" type=\"button\" class=\"btn\">Build Farm</button>";
+						btns += "<button name=\"downBtn\" id=\"downBtn\" onClick=\"build('castle'," + x + "," + y + "); \" type=\"button\" class=\"btn\">Build Castle</button>";
+					}
+					
+					if (piece.owner !== sessionInfo.userName) {
+						btns += "<button name=\"conquer\" id=\"conquerButton\" onClick=\"conquer(" + x + "," + y + "); \" type=\"button\" class=\"btn\">Conquer Tile</button>";
+					}
+					
+					if (piece.actions != null && piece.actions.length > 0) {
+						piece.actions.forEach(function(act) {
+							if (act.detail.type === "conquer") {
+								 btns += "<p><p><b>Being Conquered by: " + act.userName + " (" +act.detail.percentConquered + " %)</b><p>";
+							}
+						});
 					}
 					
 					$("#options").html(btns);
@@ -224,6 +245,24 @@ var Controller = function() {
 				x: actualXy.x - board.topLeft.x,
 				y: actualXy.y - board.topLeft.y
 			}
+		},
+		build: function(x, y, whatToBuild) {
+			console.log("Building: " + whatToBuild + " at " + x + "," + y);
+			
+			var msg = buildStub("build");
+			msg.x = x;
+			msg.y = y;
+			msg.detail.whatToBuild = whatToBuild;
+			
+		},
+		conquer: function(x, y) {
+			console.log("Conquering: " + x + "," + y);
+		
+			var msg = buildStub("conquer");
+			msg.x = x;
+			msg.y = y;
+			
+			send(msg);
 		},
 		zoom: function(where) {
 			if (((where > 0) && (board.heightInPieces > MAX_ZOOM_IN || board.widthInPieces > MAX_ZOOM_IN)) || 
@@ -269,11 +308,11 @@ var Renderer = function(c) {
 	var selected;
 	var hover;
 	
-	var castle1 = new Image();   
-	castle1.src = 'images/images-castle-clipart-830x717.png';
+//	var castle1 = new Image();   
+//	castle1.src = 'images/images-castle-clipart-830x717.png';
 
-	var castle2 = new Image();   
-	castle2.src = 'images/Castle_Zoom.png';
+	var castle = new Image();   
+	castle.src = 'images/Castle_Zoom.png';
 
 	var mountain = new Image();   
 	mountain.src = 'images/Mountain_Range.png';
@@ -378,19 +417,25 @@ var Renderer = function(c) {
 		
 	}
 	
-	function drawPiece(item, x, y) {
-		if (item == 1) {
-			ctx.drawImage(castle1, controller.xToPixel(x), controller.yToPixel(y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
-		} else if (item == 2) {
-			ctx.drawImage(castle2, controller.xToPixel(x), controller.yToPixel(y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
-		} else if (item == 3) {
-			ctx.drawImage(mountain, controller.xToPixel(x), controller.yToPixel(y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
-		}  else if (item == 4) {
-			ctx.drawImage(forest, controller.xToPixel(x), controller.yToPixel(y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
-		}  else if (item == 5) {
-			ctx.drawImage(forest2, controller.xToPixel(x), controller.yToPixel(y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
+	function drawPiece(piece) {
+		if (piece.item == 1) {
+			ctx.drawImage(mountain, controller.xToPixel(piece.x), controller.yToPixel(piece.y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
+		}  else if (piece.item == 2) {
+			ctx.drawImage(forest, controller.xToPixel(piece.x), controller.yToPixel(piece.y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
+		}  else if (piece.item == 3) {
+			ctx.drawImage(forest2, controller.xToPixel(piece.x), controller.yToPixel(piece.y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
 		}
 
+	}
+	
+	function drawActions(piece) {
+		if (piece.actions != null && piece.actions.length > 0) {
+			piece.actions.forEach(function(act) {
+				if (act.detail.type === "clicked" && act.userName != controller.getSessionInfo().userName) {
+					drawBox(controller.actualToRelative(piece), "red", act.userName);
+				}
+			});
+		}
 	}
 	
 	function drawSelected() {
@@ -444,15 +489,9 @@ var Renderer = function(c) {
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		controller.getGameModel().pieces.forEach(function(piece) {
 		
-			drawPiece(piece.item, piece.x, piece.y);
+			drawPiece(piece);
 			
-			if (piece.actions != null && piece.actions.length > 0) {
-				piece.actions.forEach(function(act) {
-					if (act.detail.type === "clicked" && act.userName != controller.getSessionInfo().userName) {
-						drawBox(controller.actualToRelative(piece), "red", act.userName);
-					}
-				});
-			}
+			drawActions(piece);
 			
 			if (piece.owner != null) {
 				drawOwned(controller.actualToRelative(piece), piece.ownerColor, piece.owner);

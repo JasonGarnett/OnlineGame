@@ -15,6 +15,7 @@ import com.garnett.model.GameBoard;
 import com.garnett.model.GameUser;
 import com.garnett.model.Piece;
 import com.garnett.model.userActions.Click;
+import com.garnett.model.userActions.Conquer;
 import com.garnett.model.userActions.GameAction;
 import com.garnett.model.userActions.MapPan;
 import com.garnett.model.userActions.Zoom;
@@ -45,6 +46,7 @@ public class GameBoardManager {
 		Thread gameLoop = new Thread(() -> {
 			while (true) {
 				try {
+					updateGameState();
 					updateAllUsers();
 					Thread.sleep(1000/tickRate);
 				} catch (InterruptedException e) {
@@ -101,6 +103,22 @@ public class GameBoardManager {
 		return temp;
 	}
 	
+	private void updateGameState() {
+		gameBoards.values().forEach(board -> {
+			board.pieces.forEach(piece -> {
+				piece.actions.forEach(action -> {
+					if (action.detail instanceof Conquer) {
+						if (((Conquer)action.detail).percentConquered == 100) {
+							piece.owner = action.userName;
+						} else 
+							((Conquer)action.detail).percentConquered++;
+						
+					}
+				});
+			});
+		});
+	}
+	
 	private void updateAllUsers() {
 		// TODO: Kick off threads to update all users at once.
 		userMgr.getActiveUsers().forEach(user -> {
@@ -124,6 +142,8 @@ public class GameBoardManager {
 				handleMove(action);
 			} else if (action.detail instanceof Zoom) {
 				handleZoom(action);
+			} else if (action.detail instanceof Conquer) {
+				handleConquer(action);
 			} else {
 				gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
 			}
@@ -157,6 +177,11 @@ public class GameBoardManager {
 	
 	public void handleZoom(GameAction action) {
 		userMgr.changeUserBoardSize(action.userName, ((Zoom)action.detail).newHeight, ((Zoom)action.detail).newWidth);
+	}
+	
+	public void handleConquer(GameAction action) {
+		LOG.info(action.userName + " is conquering tile " + action.x + "," + action.y);
+		gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
 	}
 	
 	public GameBoard getBoard(String boardName) { return gameBoards.get(boardName); }
