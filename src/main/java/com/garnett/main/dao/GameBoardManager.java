@@ -14,9 +14,11 @@ import com.garnett.main.SocketHandler;
 import com.garnett.model.GameBoard;
 import com.garnett.model.GameUser;
 import com.garnett.model.Piece;
+import com.garnett.model.userActions.Castle;
 import com.garnett.model.userActions.Click;
 import com.garnett.model.userActions.Conquer;
 import com.garnett.model.userActions.GameAction;
+import com.garnett.model.userActions.Improvement;
 import com.garnett.model.userActions.MapPan;
 import com.garnett.model.userActions.Zoom;
 import com.garnett.utilities.GameProperties;
@@ -144,6 +146,8 @@ public class GameBoardManager {
 				handleZoom(action);
 			} else if (action.detail instanceof Conquer) {
 				handleConquer(action);
+			} else if (action.detail instanceof Improvement) { 
+				handleBuild(action);
 			} else {
 				gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
 			}
@@ -177,6 +181,10 @@ public class GameBoardManager {
 	
 	public void handleZoom(GameAction action) {
 		userMgr.changeUserBoardSize(action.userName, ((Zoom)action.detail).newHeight, ((Zoom)action.detail).newWidth);
+	}
+	
+	public void handleBuild(GameAction action) {
+		LOG.info("Building");
 	}
 	
 	public void handleConquer(GameAction action) {

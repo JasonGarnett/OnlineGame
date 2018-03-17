@@ -22,7 +22,7 @@ function conquer(x,y) {
 }
 
 function build(item, x, y) {
-	controller.build(item,x,y);
+	controller.build(x,y, item);
 }
 
 
@@ -73,16 +73,19 @@ var Controller = function() {
 	function send(msg) {
 		ws.send(JSON.stringify(msg));
 	}
+	
 	function buildStub(action) {
 		
 		var msg = {};
 		msg.detail = {}
 		msg.detail.type = action;
 		msg.userName = sessionInfo.userName;
+		msg.userColor = sessionInfo.color
 		msg.whichBoard = sessionInfo.whichBoard;
 		
 		return msg;
 	}
+	
 	function moveMap(x, y) {
 		console.log("Moving to Actual " + x + "," + y);
 		var msg = buildStub("mappan");
@@ -249,10 +252,13 @@ var Controller = function() {
 		build: function(x, y, whatToBuild) {
 			console.log("Building: " + whatToBuild + " at " + x + "," + y);
 			
-			var msg = buildStub("build");
+			var msg = buildStub(whatToBuild);
 			msg.x = x;
 			msg.y = y;
-			msg.detail.whatToBuild = whatToBuild;
+			msg.detail.level = 0;
+			msg.detail.percentComplete = 0;
+			
+			send(msg);
 			
 		},
 		conquer: function(x, y) {
@@ -307,6 +313,8 @@ var Renderer = function(c) {
 	var grid = false;
 	var selected;
 	var hover;
+	var conquerFlag = 0;
+	var CONQUER_PERIOD = 60;
 	
 //	var castle1 = new Image();   
 //	castle1.src = 'images/images-castle-clipart-830x717.png';
@@ -417,6 +425,16 @@ var Renderer = function(c) {
 		
 	}
 	
+	function isDrawConquered() {
+		return conquerFlag > CONQUER_PERIOD/2;
+	}
+	
+	function drawBeingConquered(xy, color, text) {
+		if (isDrawConquered()) {
+			drawOwned(xy, color, text);
+		}
+	}
+	
 	function drawPiece(piece) {
 		if (piece.item == 1) {
 			ctx.drawImage(mountain, controller.xToPixel(piece.x), controller.yToPixel(piece.y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
@@ -432,7 +450,9 @@ var Renderer = function(c) {
 		if (piece.actions != null && piece.actions.length > 0) {
 			piece.actions.forEach(function(act) {
 				if (act.detail.type === "clicked" && act.userName != controller.getSessionInfo().userName) {
-					drawBox(controller.actualToRelative(piece), "red", act.userName);
+					drawBox(controller.actualToRelative(piece), act.userColor, act.userName);
+				} else if (act.detail.type === "conquer" && act.detail.percentConquered !== 100) {
+					drawBeingConquered(controller.actualToRelative(piece), act.userColor, act.userName)
 				}
 			});
 		}
@@ -487,6 +507,11 @@ var Renderer = function(c) {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		ctx.fillStyle = "#A87D2B";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		conquerFlag++;
+		if (conquerFlag > CONQUER_PERIOD) {
+			conquerFlag = 0;
+		}
+		
 		controller.getGameModel().pieces.forEach(function(piece) {
 		
 			drawPiece(piece);
