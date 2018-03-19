@@ -41,7 +41,7 @@ public class GameBoardManager {
 	private GameBoardManager() {
 		
 		gameBoards = new ConcurrentHashMap<>();
-		gameBoards.put("whatever", randStartingPieces("whatever", Integer.parseInt(props.getProperty("boardSize.height")), Integer.parseInt(props.getProperty("boardSize.width"))));
+		gameBoards.put("whatever", randStartingPieces("whatever", Integer.parseInt(props.getProperty("board.size.height")), Integer.parseInt(props.getProperty("board.size.width"))));
 		
 		int tickRate = Integer.parseInt(props.getProperty("tickrate"));
 		
@@ -217,9 +217,11 @@ public class GameBoardManager {
 		
 		gb.pieces = new ArrayList<>();
 		Random r = new Random();
+		int numTiles = Integer.parseInt(props.getProperty("board.numBaseTiles"));
+		
 		for (int x=0; x<=width-1; x++) {
 			for (int y=0; y<=height-1; y++) {
-				gb.pieces.add(new Piece(r.nextInt(15), x, y));
+				gb.pieces.add(new Piece(r.nextInt(numTiles), x, y));
 			}
 		}
 		

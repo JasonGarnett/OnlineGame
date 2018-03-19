@@ -132,6 +132,7 @@ var Controller = function() {
 			width: board.widthInPieces
 			}, function(data, status) {
 				gameModel = data;
+				renderer.setCanvasImages(data.baseTiles);
 				connect(wsLocation);
 				renderer.render();
 		});
@@ -316,20 +317,7 @@ var Renderer = function(c) {
 	var conquerFlag = 0;
 	var CONQUER_PERIOD = 60;
 	
-//	var castle1 = new Image();   
-//	castle1.src = 'images/images-castle-clipart-830x717.png';
-
-	var castle = new Image();   
-	castle.src = 'images/Castle_Zoom.png';
-
-	var mountain = new Image();   
-	mountain.src = 'images/Mountain_Range.png';
-	
-	var forest = new Image();   
-	forest.src = 'images/Trees_3.png';
-	
-	var forest2 = new Image();   
-	forest2.src = 'images/Trees_2.png';
+	var baseTiles = [];
 	
 	function getMousePos(e) {
 		return {
@@ -436,14 +424,7 @@ var Renderer = function(c) {
 	}
 	
 	function drawPiece(piece) {
-		if (piece.item == 1) {
-			ctx.drawImage(mountain, controller.xToPixel(piece.x), controller.yToPixel(piece.y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
-		}  else if (piece.item == 2) {
-			ctx.drawImage(forest, controller.xToPixel(piece.x), controller.yToPixel(piece.y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
-		}  else if (piece.item == 3) {
-			ctx.drawImage(forest2, controller.xToPixel(piece.x), controller.yToPixel(piece.y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
-		}
-
+		ctx.drawImage(baseTiles[piece.item], controller.xToPixel(piece.x), controller.yToPixel(piece.y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
 	}
 	
 	function drawActions(piece) {
@@ -558,6 +539,14 @@ var Renderer = function(c) {
 		},
 		render: function() {
 			renderLoop();
+		},
+		setCanvasImages(tiles) {
+			
+			for (i = 0; i < tiles.length; i++) {
+				var tile = new Image();   
+				tile.src = tiles[i];
+				baseTiles[i] = tile;
+			}
 		},
 		registerEventHandlers: function() {
 			canvas.addEventListener("click", onClick, false);
