@@ -17,6 +17,10 @@ function toggleGrid() {
 	renderer.toggleGrid();
 }
 
+function toggleIsoGrid() {
+	renderer.toggleIsoGrid();
+}
+
 function conquer(x,y) {
 	controller.conquer(x,y);
 }
@@ -313,6 +317,7 @@ var Renderer = function(c) {
 	var ctx = canvas.getContext("2d");
 	
 	var grid = false;
+	var isoGrid = false;
 	var selected;
 	var hover;
 	var conquerFlag = 0;
@@ -489,6 +494,34 @@ var Renderer = function(c) {
 		}
 	}
 	
+	function drawIsoGrid() {
+
+		ctx.lineWidth = "1";
+		ctx.strokeStyle = "black";
+		// Draw Vertical Lines
+//		for (var x = 0; x <= canvas.width-1; x = x + controller.getBoard().widthPerPiece) {
+//			ctx.beginPath();
+//			ctx.moveTo(x, 0);
+//			ctx.lineTo(x, canvas.height);
+//			ctx.stroke();
+//		}
+		
+		// Draw Hoizontal Lines
+		for (var y=0; y<=canvas.height-1; y+=controller.getBoard().heightPerPiece) {
+			ctx.beginPath();
+			ctx.moveTo(0 , y);
+			ctx.lineTo(canvas.width, y+300);
+			ctx.stroke();
+		}
+		// Draw Other Horizontal Lines
+		for (var y=0; y<=canvas.height-1; y+=controller.getBoard().heightPerPiece+10) {
+			ctx.beginPath();
+			ctx.moveTo(0 , y);
+			ctx.lineTo(canvas.width, y-300);
+			ctx.stroke();
+		}
+	}
+	
 	function drawUserDetails() {
 		ctx.beginPath();
 		//ctx.lineWidth = "0.5";
@@ -526,6 +559,8 @@ var Renderer = function(c) {
 		
 		if (grid == true)
 			drawGrid();
+		if (isoGrid == true)
+			drawIsoGrid();
 		
 		if (selected)
 			drawSelected();
@@ -548,6 +583,15 @@ var Renderer = function(c) {
 				$("#gridBtn").text("Hide Grid");
 			} else {
 				$("#gridBtn").text("Show Grid");
+			}
+		},
+		toggleIsoGrid: function() {
+			isoGrid = !isoGrid;
+			
+			if (grid == true) {
+				$("#isoGridBtn").text("Hide ISO Grid");
+			} else {
+				$("#isoGridBtn").text("Show ISO Grid");
 			}
 		},
 		getCanvasHeightWidth: function() {
