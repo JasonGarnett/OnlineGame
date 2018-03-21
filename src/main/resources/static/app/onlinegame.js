@@ -133,6 +133,7 @@ var Controller = function() {
 			}, function(data, status) {
 				gameModel = data;
 				renderer.setCanvasImages(data.baseTiles);
+				renderer.setImprovements(data.improvements);
 				connect(wsLocation);
 				renderer.render();
 		});
@@ -256,7 +257,7 @@ var Controller = function() {
 			var msg = buildStub(whatToBuild);
 			msg.x = x;
 			msg.y = y;
-			msg.detail.level = 0;
+			msg.detail.level = 1;
 			msg.detail.percentComplete = 0;
 			
 			send(msg);
@@ -318,6 +319,7 @@ var Renderer = function(c) {
 	var CONQUER_PERIOD = 60;
 	
 	var baseTiles = [];
+	var improvements = {};
 	
 	function getMousePos(e) {
 		return {
@@ -423,6 +425,12 @@ var Renderer = function(c) {
 		}
 	}
 	
+	function drawBeingImproved(x, y, act) {
+		if (isDrawConquered()) {
+			drawImprovement(x, y, act);
+		}
+	}
+	
 	function drawPiece(piece) {
 		ctx.drawImage(baseTiles[piece.item], controller.xToPixel(piece.x), controller.yToPixel(piece.y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
 	}
@@ -432,14 +440,29 @@ var Renderer = function(c) {
 			piece.actions.forEach(function(act) {
 				if (act.detail.type === "clicked" && act.userName != controller.getSessionInfo().userName) {
 					drawBox(controller.actualToRelative(piece), act.userColor, act.userName);
-				} else if (act.detail.type === "conquer" && act.detail.percentConquered !== 100) {
-					drawBeingConquered(controller.actualToRelative(piece), act.userColor, act.userName)
+				} else if (act.detail.type === "conquer") {
+					if (act.detail.percentConquered == 100) {
+						drawOwned(controller.actualToRelative(piece), act.userColor, act.userName);
+					} else {				
+						drawBeingConquered(controller.actualToRelative(piece), act.userColor, act.userName)
+					}
+					
+				} else if (act.detail.type === "castle" || act.detail.type === "mill" || act.detail.type === "farm" || act.detail.type === "mine") {
+					if (act.detail.percentComplete < 100) {
+						drawBeingImproved(piece.x, piece.y, act);
+					} else {
+						drawImprovement(piece.x, piece.y, act);
+					}
 				}
 			});
 		}
 	}
 	
-	function drawSelected() {
+	function drawImprovement(x,y, act) {
+		ctx.drawImage(improvements[act.detail.type + "." + act.detail.level], controller.xToPixel(x), controller.yToPixel(y), controller.getBoard().widthPerPiece, controller.getBoard().heightPerPiece);
+	}
+	
+	function drawSelected(action) {
 		var act = controller.relativeToActual(selected);
 		drawBox(selected, controller.getSessionInfo().color, act.x + "," + act.y);
 		
@@ -499,10 +522,6 @@ var Renderer = function(c) {
 			
 			drawActions(piece);
 			
-			if (piece.owner != null) {
-				drawOwned(controller.actualToRelative(piece), piece.ownerColor, piece.owner);
-			}
-			
 		});
 		
 		if (grid == true)
@@ -546,6 +565,14 @@ var Renderer = function(c) {
 				var tile = new Image();   
 				tile.src = tiles[i];
 				baseTiles[i] = tile;
+			}
+		},
+		setImprovements(imp) {
+		
+			for(var key in imp) {
+				var i = new Image();
+				i.src = imp[key];
+				improvements[key] = i;
 			}
 		},
 		registerEventHandlers: function() {

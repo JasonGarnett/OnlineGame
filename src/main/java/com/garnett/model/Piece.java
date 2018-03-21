@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.garnett.model.userActions.Conquer;
 import com.garnett.model.userActions.GameAction;
 
 public class Piece {
@@ -12,8 +13,6 @@ public class Piece {
 	public List<GameAction> actions;
 	public int x;
 	public int y;
-	public String owner;
-	public String ownerColor;
 	
 	public Piece(){}
 	
@@ -25,7 +24,28 @@ public class Piece {
 	}
 	
 	public void setOwner(String user, String color) {
-		this.owner = user;
-		this.ownerColor = color;
+		GameAction act = new GameAction();
+		act.detail = new Conquer();
+		((Conquer)act.detail).percentConquered = 100;
+		act.userColor = color;
+		act.userName = user;
+		act.x = x;
+		act.y = y;
+		
+		actions.add(act);
+	}
+	
+	public void setOwner(String owner) {
+		
+	}
+	
+	public String getOwner() {
+
+		for (GameAction act: actions) {
+			if (act.detail instanceof Conquer)
+				return act.userName;
+		}
+		
+		return null;
 	}
 }

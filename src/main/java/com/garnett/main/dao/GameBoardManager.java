@@ -111,10 +111,15 @@ public class GameBoardManager {
 				piece.actions.forEach(action -> {
 					if (action.detail instanceof Conquer) {
 						if (((Conquer)action.detail).percentConquered == 100) {
-							piece.owner = action.userName;
+						//	piece.owner = action.userName;
 						} else 
 							((Conquer)action.detail).percentConquered++;
 						
+					} else if (action.detail instanceof Improvement) {
+						if (((Improvement)action.detail).percentComplete == 100) {
+							//piece.owner = action.userName;
+						} else 
+							((Improvement)action.detail).percentComplete++;
 					}
 				});
 			});
@@ -184,7 +189,8 @@ public class GameBoardManager {
 	}
 	
 	public void handleBuild(GameAction action) {
-		LOG.info("Building");
+		LOG.info(action.userName + " is building a " + action.getClass());
+		gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
 	}
 	
 	public void handleConquer(GameAction action) {
