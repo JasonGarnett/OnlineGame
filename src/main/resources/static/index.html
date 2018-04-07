@@ -5,6 +5,7 @@
 	<!--  Libraries -->
 	 	<script src="lib/jquery-3.3.1.js"></script>
 		<script src="lib/bootstrap.js"></script> 
+
    <!-- <script data-main="app" src="lib/require.js"></script> -->
 	<!--  Application -->	
 	 	<script src="app/onlinegame.js"></script>
@@ -19,12 +20,13 @@
 	<body onLoad="register();">
 	   <div id="greetings"></div>
 	   <button name="gridBtn" id="gridBtn" onClick="toggleGrid();" type="button" class="btn">Show Grid</button>
-	   <button name="isoGridBtn" id="gridBtn" onClick="toggleIsoGrid();" type="button" class="btn">Show ISO Grid</button>
+	<!--    <button name="isoGridBtn" id="gridBtn" onClick="toggleIsoGrid();" type="button" class="btn">Show ISO Grid</button> -->
 	   <div id="moveButtons"></div>
 	   <p>
 	   <div id="zoomButtons"></div>
 	   <p><p>
 	   <canvas id="gameBoard" width="1200" height="1000" style="border:1px solid #000000;"></canvas>
+	  <!--  <canvas id="isoGameBoard" width="1200" height="1000" style="border:1px solid #000000;"></canvas> -->
 	   <div id="options"></div>
 	</body>
 </html>

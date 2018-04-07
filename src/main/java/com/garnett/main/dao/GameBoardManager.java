@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garnett.main.SocketHandler;
+import com.garnett.mapimporter.MapLoader;
 import com.garnett.model.GameBoard;
 import com.garnett.model.GameUser;
 import com.garnett.model.Piece;
@@ -36,12 +37,14 @@ public class GameBoardManager {
 	private static String USER_ACTION_MAP_PAN = "mappan";
 	private static String USER_ACTION_ZOOM = "zoom";
 	private Random rand = new Random();
+	private MapLoader loader = new MapLoader();
 	private Object lock = "";
 	
 	private GameBoardManager() {
 		
 		gameBoards = new ConcurrentHashMap<>();
-		gameBoards.put("whatever", randStartingPieces("whatever", Integer.parseInt(props.getProperty("board.size.height")), Integer.parseInt(props.getProperty("board.size.width"))));
+	//	gameBoards.put("whatever", randStartingPieces("whatever", Integer.parseInt(props.getProperty("board.size.height")), Integer.parseInt(props.getProperty("board.size.width"))));
+		gameBoards.put("whatever", loader.getGameBoard("whatever", props.getProperty("board.mapFile")));
 		
 		int tickRate = Integer.parseInt(props.getProperty("tickrate"));
 		

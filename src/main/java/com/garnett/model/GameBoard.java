@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import com.garnett.utilities.GameProperties;
 
 public class GameBoard {
@@ -22,18 +21,15 @@ public class GameBoard {
 	public Map<String,String> improvements;
 	private GameProperties props = GameProperties.getInstance();
 	
-	public GameBoard(String name, int height, int width){
+	public GameBoard(String name) {
 		this.name = name;
-		this.height = height;
-		this.width = width;
-		
-		baseTiles = new String[Integer.parseInt(props.getProperty("board.numBaseTiles"))];
+		this.baseTiles = new String[Integer.parseInt(props.getProperty("board.numBaseTiles"))];
+		this.improvements = new HashMap<>();
 		
 		for (int i=0; i<= baseTiles.length-1; i++) {
 			baseTiles[i] = props.getProperty("board.baseTile." + i);
 		}
 		
-		improvements = new HashMap<>();
 		String[] impTypes = {"castle", "mill", "mine", "farm"};
 		
 		for (String impType: impTypes) {
@@ -41,6 +37,24 @@ public class GameBoard {
 				improvements.put(impType + "." + i, props.getProperty("improvement." + impType + "." + i + ".img"));
 			}
 		}
+	}
+	
+	public GameBoard(String name, int height, int width){
+
+		this(name);
+		this.height = height;
+		this.width = width;
+	}
+	
+	public GameBoard(String name, String[][] tiles) {
+		this(name, tiles.length, tiles[0].length);
+				
+		for (int x=0; x<=tiles.length-1; x++) {
+			for (int y=0; y<=tiles[x].length-1; y++) {
+				this.pieces.add(new Piece(Integer.parseInt(tiles[x][y]), x, y));
+			}
+		}
+		
 	}
 	
 	public Piece getPiece(int x, int y) {
