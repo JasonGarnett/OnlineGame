@@ -76,7 +76,7 @@ public class GameBoardManager {
 			return userMgr.getUser(username);
 		else {
 			GameBoard board = findFreeBoard();
-			int[] loc = getFreeLocation(board);
+			int[] loc = getFreeLocation(board, height, width);
 			
 			GameUser newUser = userMgr.createNewUser(username, height, width, findFreeBoard().name, loc[0], loc[1]);
 			board.getPiece(loc[0], loc[1]).setOwner(newUser.userName, newUser.color);
@@ -91,17 +91,17 @@ public class GameBoardManager {
 		return gameBoards.get("whatever");
 	}
 
-	private int[] getFreeLocation(GameBoard gameBoard) {
+	private int[] getFreeLocation(GameBoard gameBoard, int height, int width) {
 		// TODO: Find a free location to start with that is not too crowded
 		
 		int x, y;
 		
 		do {
-			System.out.println("Generating Rand Width between 0 and " + (gameBoard.width - 20));
-			System.out.println("Generating Rand Width between 0 and " + (gameBoard.height - 20));
+			LOG.info("Generating Rand Width between 0 and " + (gameBoard.mapWidth - width));
+			LOG.info("Generating Rand Width between 0 and " + (gameBoard.mapHeight - height));
 			
-			x = rand.nextInt(gameBoard.width - 20);
-			y = rand.nextInt(gameBoard.width - 20);
+			x = rand.nextInt(gameBoard.mapWidth - width);
+			y = rand.nextInt(gameBoard.mapHeight - height);
 		} while (!gameBoard.isFree(x, y));
 		
 		int[] temp = {x, y};
@@ -205,19 +205,21 @@ public class GameBoardManager {
 	
 	public GameBoard getBoard(String boardName, int topLeftX, int topLeftY, int height, int width, String userName) { 
 		
-		GameBoard gb = new GameBoard(boardName, height, width);
-		gb.pieces = new ArrayList<>();
+		return gameBoards.get(boardName).getSubBoard(topLeftX, topLeftY, height, width, userMgr.getUser(userName));
 		
-		for (int x=topLeftX; x<=(topLeftX+width)-1; x++) {
-			for (int y=topLeftY; y<=(topLeftY + height)-1; y++) {
-				gb.pieces.add(gameBoards.get(boardName).getPiece(x, y));
-			}
-		}
-		gb.update = new Date();
-		gb.user = userMgr.getUser(userName);
-		gb.topLeftX = topLeftX;
-		gb.topLeftY = topLeftY;
-		return gb;
+//		GameBoard gb = new GameBoard(boardName, height, width);
+//		gb.pieces = new ArrayList<>();
+//		
+//		for (int x=topLeftX; x<=(topLeftX+width)-1; x++) {
+//			for (int y=topLeftY; y<=(topLeftY + height)-1; y++) {
+//				gb.pieces.add(gameBoards.get(boardName).getPiece(x, y));
+//			}
+//		}
+//		gb.update = new Date();
+//		gb.user = userMgr.getUser(userName);
+//		gb.topLeftX = topLeftX;
+//		gb.topLeftY = topLeftY;
+//		return gb;
 	}
 	
 	private GameBoard randStartingPieces(String name, int height, int width) {

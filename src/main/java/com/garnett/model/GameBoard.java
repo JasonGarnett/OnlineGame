@@ -12,6 +12,8 @@ public class GameBoard {
 	public String name;
 	public int height;
 	public int width;
+	public int mapHeight;
+	public int mapWidth;
 	public List<Piece> pieces = new ArrayList<>();
 	public Date update;
 	public GameUser user;
@@ -44,10 +46,12 @@ public class GameBoard {
 		this(name);
 		this.height = height;
 		this.width = width;
+		this.mapHeight = height;
+		this.mapWidth = width;
 	}
 	
 	public GameBoard(String name, String[][] tiles) {
-		this(name, tiles.length, tiles[0].length);
+		this(name, tiles[0].length, tiles.length);
 				
 		for (int x=0; x<=tiles.length-1; x++) {
 			for (int y=0; y<=tiles[x].length-1; y++) {
@@ -64,6 +68,27 @@ public class GameBoard {
 		}
 		
 		return null;
+	}
+	
+	public GameBoard getSubBoard(int topLeftX, int topLeftY, int height, int width, GameUser user) {
+		
+		GameBoard gb = new GameBoard(this.name, height, width);
+		
+		gb.pieces = new ArrayList<>();
+		
+		for (int x=topLeftX; x<=(topLeftX+width)-1; x++) {
+			for (int y=topLeftY; y<=(topLeftY + height)-1; y++) {
+				gb.pieces.add(this.getPiece(x, y));
+			}
+		}
+		
+		gb.update = new Date();
+		gb.user = user;
+		gb.topLeftX = topLeftX;
+		gb.topLeftY = topLeftY;
+		gb.mapHeight = this.mapHeight;
+		gb.mapWidth = this.mapWidth;
+		return gb;
 	}
 	
 	public boolean isFree(int x, int y) {

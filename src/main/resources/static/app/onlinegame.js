@@ -44,6 +44,8 @@ var Controller = function() {
 			widthPerPiece: 0,
 			heightInPieces: 0,
 			widthInPieces: 0,
+			mapHeight: 0,
+			mapWidth: 0,
 			topLeft: {},
 			bottomRight: {}
 	}
@@ -59,6 +61,8 @@ var Controller = function() {
 			gameModel = JSON.parse(data.data);
 			board.topLeft.x = gameModel.topLeftX;
 			board.topLeft.y = gameModel.topLeftY;
+			board.mapHeight = gameModel.mapHeight;
+			board.mapWidth = gameModel.mapWidth;
 			renderer.showGreeting(new Date(gameModel.update));
 		}
 
@@ -144,6 +148,25 @@ var Controller = function() {
 		
 	}
 	
+	function canMoveRight() {	
+		return (board.topLeft.x + board.widthInPieces)  < board.mapWidth;
+	}
+	
+	function canMoveLeft() {
+		return board.topLeft.x > 0;
+	}
+	
+	function canMoveUp() {
+		return board.topLeft.y > 0;
+	}
+	
+	function canMoveDown() {
+		return (board.topLeft.y + board.heightInPieces)  < board.mapHeight;
+	}
+	
+	function canZoomOut() {
+		return canMoveRight() && canMoveDown();
+	}
 	
 	return {
 		/**
@@ -176,13 +199,13 @@ var Controller = function() {
 		},
 		move: function(dir) {
 			
-			if (dir === "up" && board.topLeft.y > 0) {
+			if (dir === "up" && canMoveUp()) {
 				moveMap(board.topLeft.x, board.topLeft.y - 1);
-			} else if (dir === "down") {
+			} else if (dir === "down" && canMoveDown()) {
 				moveMap(board.topLeft.x, board.topLeft.y + 1);
-			} else if (dir === "left" && board.topLeft.x > 0) {
+			} else if (dir === "left" && canMoveLeft()) {
 				moveMap(board.topLeft.x - 1, board.topLeft.y);
-			} else if (dir === "right") {
+			} else if (dir === "right" && canMoveRight()) {
 				moveMap(board.topLeft.x + 1, board.topLeft.y);
 			} else {
 				console.log("Illegal move");
@@ -277,28 +300,33 @@ var Controller = function() {
 			send(msg);
 		},
 		zoom: function(where) {
+			
 			if (((where > 0) && (board.heightInPieces > MAX_ZOOM_IN || board.widthInPieces > MAX_ZOOM_IN)) || 
-				((where < 0) && (board.heightInPieces < MAX_ZOOM_OUT || board.widthInPieces < MAX_ZOOM_OUT))	) {
-				if (where > 0) {
-					board.heightPerPiece = board.heightPerPiece + 1;
-					board.widthPerPiece = board.widthPerPiece + 1;
-				} else {
-					board.heightPerPiece = board.heightPerPiece - 1;
-					board.widthPerPiece = board.widthPerPiece - 1;
+				((where < 0) && (board.heightInPieces < MAX_ZOOM_OUT || board.widthInPieces < MAX_ZOOM_OUT))) {
+				if ((where > 0) || ((where < 0) && canZoomOut())) {
+					if (where > 0) {
+						console.log("Zooming in");
+						board.heightPerPiece = board.heightPerPiece + 1;
+						board.widthPerPiece = board.widthPerPiece + 1;
+					} else {
+						console.log("Zooming out");
+						board.heightPerPiece = board.heightPerPiece - 1;
+						board.widthPerPiece = board.widthPerPiece - 1;
+					}
+					var cSize = renderer.getCanvasHeightWidth();
+					board.heightInPieces = Math.ceil(cSize.height / board.heightPerPiece);
+					board.widthInPieces = Math.ceil(cSize.width / board.widthPerPiece);
+					
+					console.log("new height: " + board.heightInPieces + "::new width: " + board.widthInPieces)
+					
+					var msg = buildStub("zoom");
+					msg.x = 0;
+					msg.y = 0;
+					msg.detail.newHeight = board.heightInPieces
+					msg.detail.newWidth = board.widthInPieces;
+					
+					send(msg);
 				}
-				var cSize = renderer.getCanvasHeightWidth();
-				board.heightInPieces = Math.ceil(cSize.height / board.heightPerPiece);
-				board.widthInPieces = Math.ceil(cSize.width / board.widthPerPiece);
-				
-				console.log("new height: " + board.heightInPieces + "::new width: " + board.widthInPieces)
-				
-				var msg = buildStub("zoom");
-				msg.x = 0;
-				msg.y = 0;
-				msg.detail.newHeight = board.heightInPieces
-				msg.detail.newWidth = board.widthInPieces;
-				
-				send(msg);
 			} else {
 				console.log("Max zoom reached");
 			}
@@ -345,13 +373,7 @@ var Renderer = function(c) {
 	}
 	
 	function onMouseWheel(e) {
-		
 		controller.zoom(e.wheelDelta/120);
-		 if ((e.wheelDelta/120) > 0) {
-			 console.log("Zooming in to " + e.clientX + " " + e.clientY);
-		 } else {
-			 console.log("Zooming out from " + e.clientX + " " + e.clientY);
-		 }
 	}
 	
 	function onClick(e) {
