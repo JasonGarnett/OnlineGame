@@ -60,7 +60,10 @@ var Controller = function() {
 			var msg = JSON.parse(message.data);
 
 			if (msg.messageType === "RESPONSE") { // Response to message Update
-				console.log("Command Successful: " + msg.success + " Reason: " + msg.reason);
+				console.log(msg);
+				var actResponse = "Command Success: " + msg.success + " Reason: " + msg.reason;
+				console.log(actResponse);
+				renderer.showActionResponse(actResponse);
 			} else if (msg.messageType === "GAMEBOARD") { // Regular Model Update
 				gameModel = msg;
 				board.topLeft.x = gameModel.topLeftX;
@@ -606,6 +609,9 @@ var Renderer = function(c) {
 		 */
 		showGreeting: function(date) {
 			$("#greetings").html("Last Updated: " + date);
+		},
+		showActionResponse: function(resp) {
+			$("#actionResponse").html(resp);
 		},
 		toggleGrid: function() {
 			grid = !grid;

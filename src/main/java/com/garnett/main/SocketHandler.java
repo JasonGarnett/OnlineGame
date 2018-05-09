@@ -56,7 +56,7 @@ public class SocketHandler extends TextWebSocketHandler {
     	WebSocketSession session = sessions.get(sessionId);
     	if (session != null && session.isOpen()) {
     		try {
-    			LOG.info(messageToSend);
+    			//LOG.info(messageToSend);
     			TextMessage msg = new TextMessage(messageToSend);
 				session.sendMessage(msg);
 			} catch (IOException e) {
