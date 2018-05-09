@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import com.garnett.utilities.GameProperties;
 
-public class GameBoard {
+public class GameBoard extends ClientMessage{
 
 	public String name;
 	public int height;
@@ -24,6 +24,7 @@ public class GameBoard {
 	private GameProperties props = GameProperties.getInstance();
 	
 	public GameBoard(String name) {
+		this.messageType = "GAMEBOARD";
 		this.name = name;
 		this.baseTiles = new String[Integer.parseInt(props.getProperty("board.numBaseTiles"))];
 		this.improvements = new HashMap<>();

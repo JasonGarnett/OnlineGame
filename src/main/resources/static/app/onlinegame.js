@@ -56,14 +56,19 @@ var Controller = function() {
 	function connect(wsAddr) {
 		ws = new WebSocket(wsAddr);
 		
-		ws.onmessage = function (data) {
-			//console.log(data.data);
-			gameModel = JSON.parse(data.data);
-			board.topLeft.x = gameModel.topLeftX;
-			board.topLeft.y = gameModel.topLeftY;
-			board.mapHeight = gameModel.mapHeight;
-			board.mapWidth = gameModel.mapWidth;
-			renderer.showGreeting(new Date(gameModel.update));
+		ws.onmessage = function (message) {
+			var msg = JSON.parse(message.data);
+
+			if (msg.messageType === "RESPONSE") { // Response to message Update
+				console.log("Command Successful: " + msg.success + " Reason: " + msg.reason);
+			} else if (msg.messageType === "GAMEBOARD") { // Regular Model Update
+				gameModel = msg;
+				board.topLeft.x = gameModel.topLeftX;
+				board.topLeft.y = gameModel.topLeftY;
+				board.mapHeight = gameModel.mapHeight;
+				board.mapWidth = gameModel.mapWidth;
+				renderer.showGreeting(new Date(gameModel.update));
+			}
 		}
 
 		ws.onopen = function() {
@@ -72,14 +77,18 @@ var Controller = function() {
 	}
 	
 	function disconnect() {
-	    if (w != null) {
+	    if (ws != null) {
 	        ws.close();
 	    }
 	    console.log("Disconnected");
 	}
 	
 	function send(msg) {
-		ws.send(JSON.stringify(msg));
+		if (ws != null) {
+			ws.send(JSON.stringify(msg));
+		} else {
+			console.log("Websocket is closed, cannot send any messages!");
+		}
 	}
 	
 	function buildStub(action) {

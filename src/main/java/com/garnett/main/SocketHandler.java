@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.AbstractWebSocketMessage;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -15,8 +14,8 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.garnett.main.dao.GameBoardManager;
 import com.garnett.main.dao.UserManager;
-import com.garnett.model.GameBoard;
 import com.garnett.model.GameUser;
+import com.garnett.model.userActions.ActionResponse;
 import com.garnett.model.userActions.GameAction;
 import com.garnett.utilities.GameProperties;
 
@@ -44,11 +43,20 @@ public class SocketHandler extends TextWebSocketHandler {
         this.sessions.put(session.getId(), session);
         LOG.info(sessions.size() + " current sessions.");
     }
+    
+    public void sendToSession(String sessionId, Object messageToSend) {
+    	try {
+    		sendToSession(sessionId, mapper.writeValueAsString(messageToSend));
+    	} catch (Exception e) {
+    		LOG.error("Error sending to session " + sessionId, e);
+    	}
+    }
 
     public void sendToSession(String sessionId, String messageToSend) {
     	WebSocketSession session = sessions.get(sessionId);
     	if (session != null && session.isOpen()) {
     		try {
+    			LOG.info(messageToSend);
     			TextMessage msg = new TextMessage(messageToSend);
 				session.sendMessage(msg);
 			} catch (IOException e) {
@@ -81,7 +89,9 @@ public class SocketHandler extends TextWebSocketHandler {
         } else {
         	LOG.info(session.getId() + ": Game Action: " + message.getPayload());
         	GameAction action = mapper.readValue(message.getPayload(), GameAction.class);
-        	boardMgr.handleGameAction(action);
+        	ActionResponse resp = boardMgr.handleGameAction(action);
+        	
+        	sendToSession(session.getId(), resp);
         }
     }
     

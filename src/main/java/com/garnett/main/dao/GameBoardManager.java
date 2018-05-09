@@ -15,6 +15,7 @@ import com.garnett.mapimporter.MapLoader;
 import com.garnett.model.GameBoard;
 import com.garnett.model.GameUser;
 import com.garnett.model.Piece;
+import com.garnett.model.userActions.ActionResponse;
 import com.garnett.model.userActions.Castle;
 import com.garnett.model.userActions.Click;
 import com.garnett.model.userActions.Conquer;
@@ -143,26 +144,27 @@ public class GameBoardManager {
 		});
 	}
 	
-	public void handleGameAction(GameAction action) {
+	public ActionResponse handleGameAction(GameAction action) {
 		LOG.info("Handling action " + action.detail.getClass());
 		synchronized (lock) {
 			if (action.detail instanceof Click)
-				handleClicked(action);
+				return handleClicked(action);
 			else if (action.detail instanceof MapPan) {
-				handleMove(action);
+				return handleMove(action);
 			} else if (action.detail instanceof Zoom) {
-				handleZoom(action);
+				return handleZoom(action);
 			} else if (action.detail instanceof Conquer) {
-				handleConquer(action);
+				return handleConquer(action);
 			} else if (action.detail instanceof Improvement) { 
-				handleBuild(action);
+				return handleBuild(action);
 			} else {
 				gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
+				return new ActionResponse(true);
 			}
 		}
 	}
 	
-	public void handleClicked(GameAction action) {
+	public ActionResponse handleClicked(GameAction action) {
 		
 		// clear out their last click
 		gameBoards.get(action.whichBoard).pieces.forEach(piece -> {
@@ -181,24 +183,46 @@ public class GameBoardManager {
 		// add their current click
 		LOG.info("Adding to " + action.x + "," + action.y);
 		gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
+		return new ActionResponse(true);
 	}
 	
-	public void handleMove(GameAction action) {
+	public ActionResponse handleMove(GameAction action) {
 		userMgr.moveUser(action.userName, action.x, action.y);
+		return new ActionResponse(true);
 	}
 	
-	public void handleZoom(GameAction action) {
+	public ActionResponse handleZoom(GameAction action) {
 		userMgr.changeUserBoardSize(action.userName, ((Zoom)action.detail).newHeight, ((Zoom)action.detail).newWidth);
+		return new ActionResponse(true);
 	}
 	
-	public void handleBuild(GameAction action) {
-		LOG.info(action.userName + " is building a " + action.getClass());
+	public ActionResponse handleBuild(GameAction action) {
+		LOG.info(action.userName + " is trying to build a " + action.detail.getClass() + " at " + action.x + "," + action.y);
+		
+		
 		gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
+		
+		return new ActionResponse(true);
 	}
 	
-	public void handleConquer(GameAction action) {
-		LOG.info(action.userName + " is conquering tile " + action.x + "," + action.y);
-		gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
+	public ActionResponse handleConquer(GameAction action) {
+		LOG.info(action.userName + " is trying to conquer tile: " + action.x + "," + action.y);
+		
+		GameUser user = userMgr.getUser(action.userName);
+		for (Piece piece: user.ownedPieces) {
+			if (isAdjacent(action.x, action.y, piece)) {
+				LOG.info(action.x + "," + action.y + " is adjacent to " + piece.x + "," + piece.y + " so allowing conquest.");
+				gameBoards.get(action.whichBoard).getPiece(action.x, action.y).actions.add(action);
+				return new ActionResponse(true);
+			}		
+		}
+		String deny = action.x + "," + action.y + " is not adjacent to any of " + action.userName + "'s territory, denying.";
+		LOG.warn(deny);
+		return new ActionResponse(false, deny);
+	}
+	
+	private boolean isAdjacent(int x, int y, Piece piece) {
+		return (Math.abs(x - piece.x) <= 1) && (Math.abs(y - piece.y) <= 1);
 	}
 	
 	public GameBoard getBoard(String boardName) { return gameBoards.get(boardName); }
