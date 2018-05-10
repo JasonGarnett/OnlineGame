@@ -613,7 +613,7 @@ var Renderer = function(c) {
 
 	function renderBoard() {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		ctx.fillStyle = "#A87D2B";
+		ctx.fillStyle = "#684330";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		conquerFlag++;
 		if (conquerFlag > CONQUER_PERIOD) {
