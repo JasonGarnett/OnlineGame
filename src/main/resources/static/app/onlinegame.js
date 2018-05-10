@@ -359,7 +359,9 @@ var Renderer = function(c) {
 	var grid = false;
 	var isoGrid = false;
 	var selected;
+	var dragLine = {};
 	var hover;
+	var isDragging = false;
 	var conquerFlag = 0;
 	var CONQUER_PERIOD = 60;
 	
@@ -374,7 +376,34 @@ var Renderer = function(c) {
 	}
 
 	function onDrag(e) {
-		console.log(e.clientX + " " + e.clientY);
+		isDragging = true;
+		var pos = getMousePos(e);
+		if (e.button === 2) {
+			console.log("Right Drag : " + pos.x + " " + pos.y);
+		} else if (e.button === 0) {
+			dragLine.startX = pos.x;
+			dragLine.startY = pos.y;
+			console.log("Left Drag : " + pos.x + " " + pos.y);
+		}
+	}
+	
+	function onDrop(e) {
+		isDragging = false;
+		if (e.button === 2) {
+			console.log("Right Drop : " + e.clientX + " " + e.clientY);
+		} else if (e.button === 0) {
+			console.log("Left Drop : " + e.clientX + " " + e.clientY);
+		}
+		dragLine = {};
+	}
+	
+	function onMove(e) {
+		if (isDragging) {
+			var pos = getMousePos(e);
+			dragLine.currentX = pos.x;
+			dragLine.currentY = pos.y;
+			console.log("Move : " + pos.x + " " + pos.y);
+		}
 	}
 	
 	function onMouseOver(e) {
@@ -468,6 +497,14 @@ var Renderer = function(c) {
 		if (isDrawConquered()) {
 			drawImprovement(x, y, act);
 		}
+	}
+	
+	function drawDragline() {
+		ctx.beginPath();
+		ctx.lineWidth="4";
+		ctx.moveTo(dragLine.startX,dragLine.startY);
+		ctx.lineTo(dragLine.currentX,dragLine.currentY);
+		ctx.stroke();
 	}
 	
 	function drawPiece(piece) {
@@ -599,6 +636,10 @@ var Renderer = function(c) {
 		if (selected)
 			drawSelected();
 		
+		if (isDragging) {
+			drawDragline();
+		}
+		
 		drawUserDetails();
 
 	}
@@ -660,7 +701,8 @@ var Renderer = function(c) {
 			canvas.addEventListener("click", onClick, false);
 			//canvas.addEventListener("mouseover", onMouseOver, false);
 			canvas.addEventListener("mousedown", onDrag, false);
-			canvas.addEventListener("mouseup", onDrag, false);
+			canvas.addEventListener("mouseup", onDrop, false);
+			canvas.addEventListener("mousemove", onMove, false);
 			canvas.addEventListener("mousewheel", onMouseWheel, false);
 			window.addEventListener("keydown", onKeyDown, false);
 		},
