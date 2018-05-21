@@ -246,21 +246,21 @@ public class GameBoardManager {
 //		return gb;
 	}
 	
-	private GameBoard randStartingPieces(String name, int height, int width) {
-		
-		GameBoard gb = new GameBoard(name, height, width);
-		
-		gb.pieces = new ArrayList<>();
-		Random r = new Random();
-		int numTiles = Integer.parseInt(props.getProperty("board.numBaseTiles"));
-		
-		for (int x=0; x<=width-1; x++) {
-			for (int y=0; y<=height-1; y++) {
-				gb.pieces.add(new Piece(r.nextInt(numTiles), x, y));
-			}
-		}
-		
-		return gb;
-	}
+//	private GameBoard randStartingPieces(String name, int height, int width) {
+//		
+//		GameBoard gb = new GameBoard(name, height, width);
+//		
+//		gb.pieces = new ArrayList<>();
+//		Random r = new Random();
+//		int numTiles = Integer.parseInt(props.getProperty("board.numBaseTiles"));
+//		
+//		for (int x=0; x<=width-1; x++) {
+//			for (int y=0; y<=height-1; y++) {
+//				gb.pieces.add(new Piece(r.nextInt(numTiles), x, y));
+//			}
+//		}
+//		
+//		return gb;
+//	}
 	
 }
