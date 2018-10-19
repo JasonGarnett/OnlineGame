@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+	
+	<!--  Libraries -->
+	 	<script src="lib/jquery-3.3.1.js"></script>
+		<script src="lib/bootstrap.js"></script> 
+
+   <!-- <script data-main="app" src="lib/require.js"></script> -->
+	<!--  Application -->	
+	 	<script src="app/knightCapture.js"></script>
+	
+	<!--  Stylesheets -->     
+		<link rel="stylesheet" href="css/bootstrap.css">
+		<link rel="stylesheet" href="css/game.css">
+	
+	    <title>Jason's Game</title>
+	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	</head>
+	
+	<body onLoad="register();">
+	   <div id="greetings"></div>
+	   <div id="actionResponse"></div>
+	   <button name="gridBtn" id="gridBtn" onClick="toggleGrid();" type="button" class="btn">Show Grid lines</button>
+	<!--    <button name="isoGridBtn" id="gridBtn" onClick="toggleIsoGrid();" type="button" class="btn">Show ISO Grid</button> -->
+	   <p><p>
+	   <canvas id="gameBoard" width="1200" height="1000" style="border:1px solid #000000;"></canvas>
+	  <!--  <canvas id="isoGameBoard" width="1200" height="1000" style="border:1px solid #000000;"></canvas> -->
+	   <div class="well" id="options"></div>
+	</body>
+</html>

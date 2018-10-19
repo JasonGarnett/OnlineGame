@@ -460,6 +460,7 @@ var Renderer = function(c) {
 		
 		ctx.lineWidth = "0.5";
 		ctx.font="12px Georgia";
+		ctx.strokeStyle = "black";
 		ctx.strokeText(text, (xy.x*controller.getBoard().widthPerPiece)+5,(xy.y*controller.getBoard().heightPerPiece)+15);
 		
 	}
@@ -479,6 +480,7 @@ var Renderer = function(c) {
 
 		ctx.lineWidth = "0.5";
 		ctx.font="12px Georgia";
+		ctx.strokeStyle = "black";
 		ctx.strokeText(text, (xy.x*controller.getBoard().widthPerPiece)+5,(xy.y*controller.getBoard().heightPerPiece)+15);
 		
 	}
